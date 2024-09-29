@@ -38,7 +38,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-slate-100  mt-10 text-slate-600 py-10">
+    <footer className="bg-slate-100   w-full h-[59%] text-slate-600 py-10">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
         
         {/* Image and Description */}

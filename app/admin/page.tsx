@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaUserMd, FaCalendarCheck, FaListUl, FaPlus, FaBars } from 'react-icons/fa';
 import { CircularProgress } from '@mui/material';
-import { MdClose } from 'react-icons/md'; // Close icon for mobile
+import AddDoctorForm from '../components/adddoctor/page'; // Adjust the path if necessary
 
 // Sample data
 const appointments = [
@@ -15,25 +15,21 @@ const appointments = [
 const patients = [
   { id: 1, name: 'John Doe', age: 30 },
   { id: 2, name: 'Jane Smith', age: 25 },
-  { id: 2, name: 'Jane Smith', age: 25 },
-  { id: 2, name: 'Jane Smith', age: 25 },
   { id: 3, name: 'Alice Johnson', age: 40 },
 ];
 
 const doctors = [
   { id: 1, name: 'Dr. Smith', specialty: 'Cardiology' },
   { id: 2, name: 'Dr. Johnson', specialty: 'Dermatology' },
-  { id: 2, name: 'Dr. Johnson', specialty: 'Dermatology' },
-  { id: 2, name: 'Dr. Johnson', specialty: 'Dermatology' },
   { id: 3, name: 'Dr. Williams', specialty: 'Pediatrics' },
 ];
 
 const Dashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'appointments' | 'patients' | 'doctors'>('appointments');
+  const [activeTab, setActiveTab] = useState<'appointments' | 'patients' | 'doctors' | 'addDoctor'>('appointments');
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleTabChange = (tab: 'appointments' | 'patients' | 'doctors') => {
+  const handleTabChange = (tab: 'appointments' | 'patients' | 'doctors' | 'addDoctor') => {
     setLoading(true);
     setTimeout(() => {
       setActiveTab(tab);
@@ -43,11 +39,11 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen mt-20 bg-gray-100">
+    <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className={`fixed inset-0 bg-white shadow-lg transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 md:w-64 z-20`}>
+      <aside className={`fixed left-0 top-0 h-full  bg-white shadow-lg transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:w-64 z-20`}>
         <nav className="flex flex-col p-4">
-          <h1 className="text-xl font-bold mb-4">👲 Admin Dashboard</h1>
+          <h1 className="text-xl font-bold mt-20 mb-4">👲 Admin Dashboard</h1>
           <button onClick={() => handleTabChange('appointments')} className="flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded">
             <FaCalendarCheck className="mr-2" /> Appointments
           </button>
@@ -57,9 +53,9 @@ const Dashboard: React.FC = () => {
           <button onClick={() => handleTabChange('doctors')} className="flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded">
             <FaListUl className="mr-2" /> Doctors List
           </button>
-          <Link href="/add-doctor" className="flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded">
+          <button onClick={() => handleTabChange('addDoctor')} className="flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded">
             <FaPlus className="mr-2" /> Add Doctor
-          </Link>
+          </button>
         </nav>
       </aside>
 
@@ -68,26 +64,23 @@ const Dashboard: React.FC = () => {
         <div className="fixed inset-0 bg-black opacity-50 z-10" onClick={() => setSidebarOpen(false)}></div>
       )}
 
-      <main className="flex-1 p-6">
-        <button
-          className="md:hidden text-gray-600"
-          onClick={() => setSidebarOpen(true)}
-        >
+      <main className="flex-1 ml-64 p-6 overflow-y-auto"> {/* Add overflow-y-auto for scrolling */}
+        <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
           <FaBars className="text-2xl" />
         </button>
-        <h1 className="text-3xl font-semibold mb-6">Welcome to the Dashboard</h1>
-        
+        <h1 className="text-3xl font-semibold mb-6 mt-20">Welcome to the Dashboard</h1>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <div className="p-6 bg-blue-100 rounded-lg shadow-md">
             <h3 className="text-xl font-bold">📅 Total Appointments</h3>
             <p className="text-2xl">{appointments.length}</p>
           </div>
           <div className="p-6 bg-green-100 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold">👨‍⚕️Total Doctors</h3>
+            <h3 className="text-xl font-bold">👨‍⚕️ Total Doctors</h3>
             <p className="text-2xl">{doctors.length}</p>
           </div>
           <div className="p-6 bg-orange-100 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold"> 🧑‍🍼Total Patients</h3>
+            <h3 className="text-xl font-bold">🧑‍🍼 Total Patients</h3>
             <p className="text-2xl">{patients.length}</p>
           </div>
         </div>
@@ -166,6 +159,8 @@ const Dashboard: React.FC = () => {
                 </table>
               </>
             )}
+
+            {activeTab === 'addDoctor' && <AddDoctorForm />}
           </>
         )}
       </main>
