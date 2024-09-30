@@ -52,137 +52,149 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen ml-0 bg-gray-100">
-      {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 h-full mt-20 bg-[url('/images/image.jpeg')] bg-cover bg-center bg-white shadow-lg transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:w-64 z-20`}>
-  <nav className="flex flex-col p-4">
-    <h1 className="text-xl font-bold mt-20 mb-4">👲 Admin Dashboard</h1>
-    <button onClick={() => handleTabChange('appointments')} className="flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded">
-      <FaCalendarCheck className="mr-2" /> Appointments
-    </button>
-    <button onClick={() => handleTabChange('patients')} className="flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded">
-      <FaUserMd className="mr-2" /> Patients
-    </button>
-    <button onClick={() => handleTabChange('doctors')} className="flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded">
-      <FaListUl className="mr-2" /> Doctors List
-    </button>
-    <button onClick={() => handleTabChange('addDoctor')} className="flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded">
-      <FaPlus className="mr-2" /> Add Doctor
-    </button>
-  </nav>
-</aside>
-
-
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black opacity-50 z-10" onClick={() => setSidebarOpen(false)}></div>
-      )}
-
-      <main className="flex-1 md:ml-[20%] ml-1 p-6 overflow-y-auto"> {/* Add overflow-y-auto for scrolling */}
-        <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
-          <FaBars className="text-2xl" />
-        </button>
-        <h1 className="text-3xl font-semibold mb-6 mt-20">Welcome to the Dashboard</h1>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          <div className="p-6 bg-blue-100 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold">📅 Total Appointments</h3>
-            <p className="text-2xl">{appointments.length}</p>
-          </div>
-          <div className="p-6 bg-green-100 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold">👨‍⚕️ Total Doctors</h3>
-            <p className="text-2xl">{doctors.length}</p>
-          </div>
-          <div className="p-6 bg-orange-100 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold">🧑‍🍼 Total Patients</h3>
-            <p className="text-2xl">{patients.length}</p>
+    <>
+      <div className="fixed top-0 left-0 w-full bg-white border-b border-blue-300 bg-transparent py-4 z-50 flex items-center justify-between">
+        <div className="container mx-auto flex items-center px-4 md:px-8">
+          <div className="w-44 cursor-pointer flex items-center">
+            <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
+            <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md">Admin</span>
           </div>
         </div>
+      </div>
 
-        {loading ? (
-          <div className="flex items-center mt-20  justify-center h-full">
-            <CircularProgress size={32}/>
-          </div>
-        ) : (
-          <>
-            {/* Conditional Rendering Based on Active Tab */}
-            {activeTab === 'appointments' && (
-              <>
-                <h2 className="text-2xl font-semibold mb-4">Appointments</h2>
-                <table className="min-w-full bg-white border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="py-2 border-b">Doctor</th>
-                      <th className="py-2 border-b">Appointment Date</th>
-                      <th className="py-2 border-b">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {appointments.map((appointment) => (
-                      <tr key={appointment.id}>
-                        <td className="py-2 border-b">{appointment.doctor}</td>
-                        <td className="py-2 border-b">{appointment.date}</td>
-                        <td className="py-2 border-b">{appointment.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </>
-            )}
+      <div className="flex h-screen ml-0 bg-slate-100">
+        {/* Sidebar */}
+        <aside className={`fixed left-0 top-0 h-full mt-20 border bg-slate-200 shadow-lg transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:w-64 z-20`}>
+          <nav className="flex flex-col gap-6 p-4">
+            <h1 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
+              Admin Dashboard
+            </h1>
+            <button onClick={() => handleTabChange('appointments')} className={`flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded ${activeTab === 'appointments' ? 'font-bold text-indigo-600' : ''}`}>
+              <FaCalendarCheck className="mr-2 text-indigo-600" /> Appointments
+            </button>
+            <button onClick={() => handleTabChange('patients')} className={`flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded ${activeTab === 'patients' ? 'font-bold text-indigo-600' : ''}`}>
+              <FaUserMd className="mr-2 text-indigo-600" /> Patients
+            </button>
+            <button onClick={() => handleTabChange('doctors')} className={`flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded ${activeTab === 'doctors' ? 'font-bold text-indigo-600' : ''}`}>
+              <FaListUl className="mr-2 text-indigo-600" /> Doctors List
+            </button>
+            <button onClick={() => handleTabChange('addDoctor')} className={`flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded ${activeTab === 'addDoctor' ? 'font-bold text-indigo-600' : ''}`}>
+              <FaPlus className="mr-2 text-indigo-600" /> Add Doctor
+            </button>
+          </nav>
+        </aside>
 
-            {activeTab === 'patients' && (
-              <>
-                <h2 className="text-2xl font-semibold mb-4">Patients</h2>
-                <table className="min-w-full bg-white border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="py-2 border-b">Name</th>
-                      <th className="py-2 border-b">Age</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {patients.map((patient) => (
-                      <tr key={patient.id}>
-                        <td className="py-2 border-b">{patient.name}</td>
-                        <td className="py-2 border-b">{patient.age}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </>
-            )}
-
-            {activeTab === 'doctors' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                {doctors.map(doctor => (
-                  <div key={doctor.id} className="border rounded-lg overflow-hidden shadow-md transition duration-200 hover:outline-1 hover:shadow-lg">
-                    <Image
-                      src={doctor.image}
-                      alt={doctor.name}
-                      width={200}
-                      height={150}
-                      className="object-cover w-full"
-                    />
-                    <div className="p-4">
-                      <h2 className="text-lg font-semibold text-green-700">
-                        {doctor.name} {[doctor.specialty] || '❓'}
-                      </h2>
-                      <p className="text-sm text-gray-600">{doctor.specialty}</p>
-                      <p className={`mt-2 text-sm font-bold ${doctor.available ? 'text-green-400' : 'text-red-400'}`}>
-                        {doctor.available ? 'Available' : 'Not Available'}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {activeTab === 'addDoctor' && <AddDoctorForm />}
-          </>
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 bg-black opacity-50 z-10" onClick={() => setSidebarOpen(false)}></div>
         )}
-      </main>
-    </div>
+
+        <main className="flex-1 md:ml-[20%] ml-1 p-6 overflow-y-auto">
+          <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
+            <FaBars className="text-2xl" />
+          </button>
+          <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
+        Welcome to Dashboard       
+     </h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 place-items-center gap-6 mb-6">
+            <div className="p-6 hover:shandow-lg bg-white rounded-lg shandow-md">
+              <h3 className="text-md text-center text-slate-600 font-bold">📅  Appointments</h3>
+              <p className="text-2xl font-bold text-center text-purple-700">{appointments.length}</p>
+            </div>
+            <div className="p-6 bg-white hover:shandow-lg rounded-lg shandow-md">
+              <h3 className="text-md text-center text-slate-600 font-bold">👨‍⚕️ Total Doctors</h3>
+              <p className="text-2xl text-center font-bold text-blue-700">{doctors.length}</p>
+            </div>
+            <div className="p-6 bg-white hover:shandow-lg rounded-lg shandow-md">
+              <h3 className="text-md text-center text-slate-600 font-bold">🧑‍🍼 Total Patients</h3>
+              <p className="text-2xl text-center font-bold text-green-700">{patients.length}</p>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center mt-20 justify-center h-full">
+              <CircularProgress size={32} />
+            </div>
+          ) : (
+            <>
+              {/* Conditional Rendering Based on Active Tab */}
+              {activeTab === 'appointments' && (
+                <>
+                  <h2 className="text-2xl font-semibold mb-4">Appointments</h2>
+                  <table className="min-w-full bg-white border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="py-2 border-b">Doctor</th>
+                        <th className="py-2 border-b">Appointment Date</th>
+                        <th className="py-2 border-b">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {appointments.map((appointment) => (
+                        <tr key={appointment.id}>
+                          <td className="py-2 border-b">{appointment.doctor}</td>
+                          <td className="py-2 border-b">{appointment.date}</td>
+                          <td className="py-2 border-b">{appointment.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
+
+              {activeTab === 'patients' && (
+                <>
+                  <h2 className="text-2xl font-semibold mb-4">Patients</h2>
+                  <table className="min-w-full bg-white border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="py-2 border-b">Name</th>
+                        <th className="py-2 border-b">Age</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {patients.map((patient) => (
+                        <tr key={patient.id}>
+                          <td className="py-2 border-b">{patient.name}</td>
+                          <td className="py-2 border-b">{patient.age}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
+
+              {activeTab === 'doctors' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {doctors.map(doctor => (
+                    <div key={doctor.id} className="border rounded-lg overflow-hidden shadow-md transition duration-200 hover:outline-1 hover:shadow-lg">
+                      <Image
+                        src={doctor.image}
+                        alt={doctor.name}
+                        width={200}
+                        height={150}
+                        className="object-cover w-full"
+                      />
+                      <div className="p-4">
+                        <h2 className="text-lg font-semibold text-green-700">
+                          {doctor.name} {[doctor.specialty] || '❓'}
+                        </h2>
+                        <p className="text-sm text-gray-600">{doctor.specialty}</p>
+                        <p className={`mt-2 text-sm font-bold ${doctor.available ? 'text-green-400' : 'text-red-400'}`}>
+                          {doctor.available ? 'Available' : 'Not Available'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === 'addDoctor' && <AddDoctorForm />}
+            </>
+          )}
+        </main>
+      </div>
+    </>
   );
 };
 

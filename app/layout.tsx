@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import ClientLayout from "../app/_app";
-import "./globals.css";
-
+import './globals.css'; // Adjust the path as needed
 
 export const metadata: Metadata = {
   title: "Appointments",

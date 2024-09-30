@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import Image from "next/image"
 const specialties = {
   'Dentist': '🦷',
   'General Physician': '👨‍⚕️',
@@ -17,7 +17,7 @@ const educationLevels = [
   'PhD'
 ];
 
-const feesOptions = Array.from({ length: 17 }, (_, i) => (450 + i * 50).toString());
+const feesOptions = Array.from({ length: 10 }, (_, i) => (50 + i * 50).toString());
 
 const AddDoctorForm: React.FC = () => {
   const [doctorName, setDoctorName] = useState('');
@@ -88,9 +88,21 @@ const AddDoctorForm: React.FC = () => {
               {image ? (
                 <img src={URL.createObjectURL(image)} alt="Doctor" className="w-full h-full rounded-full object-cover" />
               ) : (
-                <span className="text-gray-500">Upload Image</span>
+                <Image
+                src="/images/default.png"
+                alt="default"
+                width={100}
+                height={100}
+                className="object-cover rounded-full w-full"
+              />
+              
               )}
+             
             </div>
+            <span className=" text-slate-500 text-xl text-semibold">
+                upload image
+             </span>
+            
           </label>
         </div>
 
