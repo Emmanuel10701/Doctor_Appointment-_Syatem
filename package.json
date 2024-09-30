@@ -15,6 +15,8 @@
     "@mui/material": "^6.1.1",
     "@prisma/client": "^5.20.0",
     "axios": "^1.7.7",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "lucide-react": "^0.441.0",
     "mongodb": "^6.9.0",
     "next": "14.2.11",
@@ -27,6 +29,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
