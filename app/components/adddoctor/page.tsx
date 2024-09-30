@@ -93,7 +93,7 @@ const AddDoctorForm: React.FC = () => {
                 alt="default"
                 width={100}
                 height={100}
-                className="object-cover rounded-full w-full"
+                className="object-cover bg-slate-300  rounded-full w-full"
               />
               
               )}

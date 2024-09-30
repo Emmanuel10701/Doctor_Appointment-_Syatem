@@ -100,7 +100,16 @@ const AppointmentDetail: React.FC = () => {
 
         <div className="w-full md:w-4/6 md:pl-4">
           <div className='border p-4 rounded-lg shadow-md bg-white mb-4'>
-            <h1 className="text-3xl font-bold mb-2 flex items-center">{doctor.name}</h1>
+            <h1 className="text-3xl font-bold mb-2 flex items-center">
+            {doctor.name}
+            <Image
+              src="/images/verify.png"
+              alt="verify"
+              width={24}
+              height={24}
+              className="object-cover bg-slate-50 ml-4 rounded-full"
+            />
+          </h1>           
             <h2 className="text-xl font-semibold text-indigo-600 mb-4">{doctor.specialty}</h2>
             <p className="text-md font-bold text-green-600 mb-1">Degree: {doctor.degree}</p>
             <p className="text-sm text-slate-500 mb-4">{doctor.description}</p>
@@ -145,7 +154,7 @@ const AppointmentDetail: React.FC = () => {
                     )}
                     </div>
                 ) : (
-                    <button className="bg-green-500 text-white py-2 px-4 rounded" disabled>
+                    <button className="bg-green-500 text-white py-2 rounded-full px-4 " disabled>
                     Paid
                     </button>
                 )}
