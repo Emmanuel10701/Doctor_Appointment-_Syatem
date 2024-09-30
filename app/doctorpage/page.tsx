@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { FaUserMd, FaCalendarCheck, FaBars } from 'react-icons/fa';
 import { CircularProgress } from '@mui/material';
-import AddDoctorForm from '../components/adddoctor/page'; // Adjust the path if necessary
+import DoctorProfile from '../components/doctorprofile/page'; // Adjust the path if necessary
 
 const appointments = [
   { id: 1, doctor: 'Dr. Smith', date: '2024-09-30', status: 'Confirmed', fee: 100, patientEmail: 'patient1@example.com' },
@@ -113,9 +113,7 @@ const Dashboard: React.FC = () => {
           <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
             <FaBars className="text-2xl" />
           </button>
-          <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
-            Welcome to Dashboard       
-          </h1>
+          
 
           <div className="mb-6">
           <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
@@ -180,9 +178,13 @@ const Dashboard: React.FC = () => {
 
               {activeTab === 'profile' && (
                 <div>
-                  <h2 className="text-2xl font-semibold mb-4">Profile</h2>
-                  {/* Profile update form goes here */}
-                  <p>Profile details can be updated here.</p>
+                <h1 className="text-2xl text-center font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-4 mb-4">
+                Profile           
+                </h1>                  {/* Profile update form goes here */}
+                  <div className=' w-full flex '>
+                  <DoctorProfile/>
+
+                  </div>
                 </div>
               )}
             </>
@@ -195,6 +197,7 @@ const Dashboard: React.FC = () => {
             <div className="bg-white p-6 rounded-lg shadow-lg">
               <h2 className="text-lg font-semibold">Confirm Cancellation</h2>
               <p>Are you sure you want to cancel this appointment?</p>
+              <input type="text" />
               <div className="mt-4 flex justify-end">
                 <button className={`bg-red-600 text-white px-4 py-2 rounded mr-2 ${confirmButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={confirmCancellation} disabled={confirmButtonDisabled}>Confirm</button>
                 <button className="bg-gray-300 px-4 py-2 rounded" onClick={closeModal}>Cancel</button>
