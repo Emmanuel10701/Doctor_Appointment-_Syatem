@@ -10,15 +10,18 @@ import AddDoctorForm from '../components/adddoctor/page'; // Adjust the path if 
 
 // Sample data
 const appointments = [
-  { id: 1, doctor: 'Dr. Smith', date: '2024-09-30', status: 'Confirmed' },
-  { id: 2, doctor: 'Dr. Johnson', date: '2024-10-01', status: 'Pending' },
-  { id: 3, doctor: 'Dr. Williams', date: '2024-10-02', status: 'Cancelled' },
+  { id: 1, doctor: 'Dr. Smith', date: '2024-09-30', status: 'Confirmed',specialty: 'Dentist', image: '/assets/assets_frontend/doc1.png', },
+  { id: 2, doctor: 'Dr. Johnson', date: '2024-10-01', status: 'Pending' ,specialty: 'Dermatologist', image: '/assets/assets_frontend/doc3.png',},
+  { id: 3, doctor: 'Dr. Williams', date: '2024-10-02', status: 'Cancelled',specialty: 'Neurologist', image: '/assets/assets_frontend/doc4.png', },
 ];
 
 const patients = [
-  { id: 1, name: 'John Doe', age: 30 },
-  { id: 2, name: 'Jane Smith', age: 25 },
-  { id: 3, name: 'Alice Johnson', age: 40 },
+  { id: 1, name: 'John Doe', age: 30 ,image: '/assets/assets_frontend/profile_pic.png'},
+  { id: 2, name: 'Jane Smith', age: 25,image: '/assets/assets_frontend/doc14.png' },
+  { id: 3, name: 'Alice Johnson', age: 40,image: '/assets/assets_frontend/doc7.png' },
+  { id: 3, name: 'Alice Johnson', age: 40,image: '/assets/assets_frontend/profile_pic.png' },
+  { id: 3, name: 'Alice Johnson', age: 40,image: '/assets/assets_frontend/doc12.png' },
+  { id: 3, name: 'Alice Johnson', age: 40,image: '/assets/assets_frontend/profile_pic.png' },
 ];
 
 const doctors = [
@@ -56,10 +59,6 @@ const Dashboard: React.FC = () => {
 
 
 
-  const handleLogout = async () => {
-    // Sign out using next-auth
-    await signOut({ redirect: true, callbackUrl: '/login' }); // Redirect to the login page after logout
-  };
 
 
   
@@ -73,10 +72,12 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
         <button 
-    onClick={handleLogout} 
-    className="flex items-center text-gray-600 hover:bg-gray-200 rounded px-3 py-1 ml-auto">
-    <FaSignOutAlt className="mr-1" /> Logout
+  onClick={() => signOut()}
+  className="flex items-center text-gray-600 hover:bg-gray-200 rounded px-3 py-1 ml-auto"
+>
+  <FaSignOutAlt className="mr-1" /> Logout
 </button>
+
 
       </div>
 
@@ -142,17 +143,23 @@ const Dashboard: React.FC = () => {
                   <table className="min-w-full bg-white border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="py-2 border-b">Doctor</th>
-                        <th className="py-2 border-b">Appointment Date</th>
-                        <th className="py-2 border-b">Status</th>
+                        <th className="py-2 border-b text-slate-600 font-extrabold text-center">Doctor</th>
+                        <th className="py-2 border-b text-slate-600 font-extrabold text-center">Appointment Date</th>
+                        <th className="py-2 border-b text-slate-600 font-extrabold text-center">Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {appointments.map((appointment) => (
                         <tr key={appointment.id}>
-                          <td className="py-2 border-b">{appointment.doctor}</td>
-                          <td className="py-2 border-b">{appointment.date}</td>
-                          <td className="py-2 border-b">{appointment.status}</td>
+                          <div className='flex gap-3 bd-white shandow-lg '>
+                            <Image src={appointment.image} alt="image" width={76} height={50} className='w-20 h-20 rounded-full '/>
+                            <div className='flex flex-col'>
+                            <td className="py-1 text-slate-600 font-extrabold">{appointment.doctor}</td>
+                            <td className="py-1 text-green-400">{appointment.specialty}</td>
+                            </div>
+                          </div>
+                          <td className="text-blue-700 text-center">{appointment.date}</td>
+                          <td className="py-2 text-center text-orange-700">{appointment.status}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -166,18 +173,32 @@ const Dashboard: React.FC = () => {
                   <table className="min-w-full bg-white border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
+                        <th className="py-2 border-b">Image</th>
                         <th className="py-2 border-b">Name</th>
                         <th className="py-2 border-b">Age</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {patients.map((patient) => (
-                        <tr key={patient.id}>
-                          <td className="py-2 border-b">{patient.name}</td>
-                          <td className="py-2 border-b">{patient.age}</td>
-                        </tr>
-                      ))}
-                    </tbody>
+  {patients.map((patient) => (
+    <tr key={patient.id}>
+      <td className="py-1 text-slate-600 shandow-lg  bg-white font-extrabold">
+        <div className='flex gap-3 items-center'>
+          <Image 
+            src={patient.image} 
+            alt="image" 
+            width={40} 
+            height={40} 
+            className='w-20 h-20 rounded-full'
+          />
+        </div>
+      </td>
+      <td>        <span className='text-lg text-center font-bold '>{patient.name}</span>
+      </td>
+      <td className="py-2  text-center text-blue-700">{patient.age}</td>
+    </tr>
+  ))}
+</tbody>
+
                   </table>
                 </>
               )}
