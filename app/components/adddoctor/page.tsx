@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import Image from "next/image";
 import { useSession } from 'next-auth/react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { CircularProgress, Button } from '@mui/material';
 
 interface User {
   id: string;
   name: string;
   email: string;
+}
+
+interface SessionUser {
+  id: string;
+  name?: string;
+  email?: string;
+}
+
+interface Session {
+  user?: SessionUser;
 }
 
 const specialties = {
@@ -28,7 +41,7 @@ const educationLevels = [
 const feesOptions = Array.from({ length: 10 }, (_, i) => (50 + i * 50).toString());
 
 const AddDoctorForm: React.FC = () => {
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: Session | null };
   const [doctorName, setDoctorName] = useState('');
   const [doctorEmail, setDoctorEmail] = useState('');
   const [specialty, setSpecialty] = useState('');
@@ -40,7 +53,8 @@ const AddDoctorForm: React.FC = () => {
   const [aboutMe, setAboutMe] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [userOptions, setUserOptions] = useState<User[]>([]);
-  
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const fetchUsers = async () => {
       const response = await fetch('/api/register');
@@ -66,11 +80,10 @@ const AddDoctorForm: React.FC = () => {
     }
   };
 
-
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+    setLoading(true);
+
     const formData = new FormData();
     formData.append('name', doctorName);
     formData.append('email', doctorEmail);
@@ -82,13 +95,13 @@ const AddDoctorForm: React.FC = () => {
     formData.append('address2', address2);
     formData.append('aboutMe', aboutMe);
     
-    // Ensure userId is defined
     const userId = session?.user?.id;
     if (userId) {
       formData.append('userId', userId);
     } else {
       console.error('User ID is not available');
-      return; // Stop submission if user ID is not available
+      setLoading(false);
+      return;
     }
     
     if (image) {
@@ -107,25 +120,27 @@ const AddDoctorForm: React.FC = () => {
       
       const result = await response.json();
       console.log('Success:', result);
+      toast.success('Doctor added successfully!');
       
-      // Reset the form or handle success
-      // Optionally, you can reset the form here if needed
-      // setDoctorName('');
-      // setDoctorEmail('');
-      // setSpecialty('');
-      // setExperience('');
-      // setFees('');
-      // setEducation('');
-      // setAddress1('');
-      // setAddress2('');
-      // setAboutMe('');
-      // setImage(null);
+      // Reset the form fields
+      setDoctorName('');
+      setDoctorEmail('');
+      setSpecialty('');
+      setExperience('');
+      setFees('');
+      setEducation('');
+      setAddress1('');
+      setAddress2('');
+      setAboutMe('');
+      setImage(null);
   
     } catch (error) {
       console.error('Error:', error);
+      toast.error('Error adding doctor. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   return (
     <div className="min-h-screen overflow-hidden flex flex-col">
@@ -152,7 +167,7 @@ const AddDoctorForm: React.FC = () => {
               )}
             </div>
             <span className="text-slate-500 text-xl text-semibold">
-              upload image
+              Upload Image
             </span>
           </label>
         </div>
@@ -177,7 +192,7 @@ const AddDoctorForm: React.FC = () => {
             <input
               type="text"
               value={doctorName}
-              readOnly // Set to read-only since it will auto-fill
+              readOnly
               className="p-2 border rounded focus:outline-none focus:ring focus:ring-blue-500"
             />
           </div>
@@ -274,11 +289,18 @@ const AddDoctorForm: React.FC = () => {
           />
         </div>
 
-        <button type="submit" className="mt-4 p-2 bg-blue-500 text-white rounded w-32 self-center">
-          Submit
-        </button>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          className="mt-4 w-32 self-center"
+          disabled={loading}
+        >
+          {loading ? <CircularProgress size={24} color="inherit" /> : 'Submit'}
+        </Button>
       </form>
 
+      <ToastContainer />
       <footer className="mt-auto p-4 bg-gray-800 text-white text-center">
         © 2024 Your Company. All rights reserved.
       </footer>

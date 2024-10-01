@@ -13,7 +13,7 @@ interface DoctorDetails {
   address1: string;
   address2: string;
   aboutMe: string;
-  image: string | File; // Keep it as string | File for input handling
+  image: string | File;
 }
 
 const randomDoctorDetails: DoctorDetails = {
@@ -49,6 +49,11 @@ const DoctorProfile: React.FC = () => {
   const handleEdit = () => setIsEditing(true);
 
   const handleSave = async () => {
+    if (!doctorDetails.email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
     const formData = new FormData();
     Object.entries(doctorDetails).forEach(([key, value]) => {
       if (value) {
@@ -77,74 +82,62 @@ const DoctorProfile: React.FC = () => {
 
   return (
     <div className="flex flex-col justify-center items-center mt-20 h-screen">
-  <ToastContainer />
-  <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-4xl">
-    <div className="flex-1 mb-6">
-      <h3 className="text-lg font-bold mb-2">Basic Information</h3>
-      {['name', 'email', 'specialty', 'password', 'experience', 'fees'].map((key) => (
-        <div key={key} className="mb-4">
-          <label className="block text-gray-700 font-bold">
-            {key.charAt(0).toUpperCase() + key.slice(1)}
-          </label>
+      <ToastContainer />
+      <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-4xl">
+        <div className="flex-1 mb-6">
+          <h3 className="text-lg font-bold mb-2">Basic Information</h3>
+          {Object.keys(randomDoctorDetails).map((key) => (
+            <div key={key} className="mb-4">
+              <label className="block text-gray-700 font-bold">
+                {key.charAt(0).toUpperCase() + key.slice(1)}
+              </label>
+              {isEditing ? (
+                <input
+                  type={key === 'password' ? 'password' : 'text'}
+                  name={key}
+                  value={doctorDetails[key as keyof DoctorDetails] as string}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                />
+              ) : (
+                <span className="font-semibold text-gray-800">
+                  {doctorDetails[key as keyof DoctorDetails]}
+                </span>
+              )}
+            </div>
+          ))}
+          <div className="mb-4">
+            <label className="block text-gray-700 font-bold">Profile Image</label>
+            <label className="cursor-pointer">
+              <img
+                src={imageUrl}
+                alt="Doctor"
+                className="h-20 w-20 rounded-full"
+              />
+              {isEditing && (
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              )}
+            </label>
+          </div>
+        </div>
+
+        <div className="flex justify-between mt-6">
           {isEditing ? (
-            <input
-              type={key === 'password' ? 'password' : 'text'}
-              name={key}
-              value={doctorDetails[key as keyof DoctorDetails] as string}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
+            <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded">
+              Save Profile
+            </button>
           ) : (
-            <span className="font-semibold text-gray-800">
-              {doctorDetails[key as keyof DoctorDetails] || 'N/A'}
-            </span>
+            <button onClick={handleEdit} className="bg-green-500 text-white px-4 py-2 rounded">
+              Edit Profile
+            </button>
           )}
         </div>
-      ))}
-
-      {/* Handle Image separately */}
-      <div className="mb-4">
-        <label className="block text-gray-700 font-bold">Profile Image</label>
-        <label className="cursor-pointer">
-          {typeof doctorDetails.image === 'string' ? (
-            <img
-              src={doctorDetails.image}
-              alt="Doctor"
-              className="h-20 w-20 rounded-full"
-            />
-          ) : (
-            <img
-              src={URL.createObjectURL(doctorDetails.image)}
-              alt="Doctor"
-              className="h-20 w-20 rounded-full"
-            />
-          )}
-          {isEditing && (
-            <input
-              type="file"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          )}
-        </label>
       </div>
     </div>
-
-    {/* Edit and Save Buttons */}
-    <div className="flex justify-between mt-6">
-      {isEditing ? (
-        <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded">
-          Save Profile
-        </button>
-      ) : (
-        <button onClick={handleEdit} className="bg-green-500 text-white px-4 py-2 rounded">
-          Edit Profile
-        </button>
-      )}
-    </div>
-  </div>
-</div>
-
   );
 };
 

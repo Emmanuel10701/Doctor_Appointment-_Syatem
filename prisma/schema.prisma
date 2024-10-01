@@ -109,4 +109,15 @@ model Appointment {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+model Patient {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String   @unique
+  phone      String?  // Make phone optional
+  birthDate  DateTime
+  gender     String
+  address    String
+  aboutMe    String
+  image      String   // URL of the image
+}
 

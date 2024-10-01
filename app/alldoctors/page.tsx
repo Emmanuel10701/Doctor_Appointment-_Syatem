@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 const doctorsData = [
   { id: 1, name: 'Dr. Smith', specialty: 'Dentist', image: '/assets/assets_frontend/doc1.png', available: true },
@@ -44,6 +45,11 @@ const specialtyEmojis: { [key: string]: string } = {
 
 const DoctorsPage: React.FC = () => {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>('All');
+  const router = useRouter();
+
+  const handleDoctorClick = (doctorId: number) => {
+    router.push(`/alldoctors/${doctorId}`);
+  };
 
   const filteredDoctors = selectedSpecialty === 'All' 
     ? doctorsData 
@@ -75,7 +81,11 @@ const DoctorsPage: React.FC = () => {
         {/* Grid Display for Doctors */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredDoctors.map(doctor => (
-            <div key={doctor.id} className="border rounded-lg overflow-hidden shadow-md transition duration-200 hover:outline-1 hover:shadow-lg">
+            <div 
+              key={doctor.id} 
+              className="border rounded-lg overflow-hidden shadow-md transition duration-200 hover:outline-1 hover:shadow-lg"
+              onClick={() => handleDoctorClick(doctor.id)}
+            >
               <Image
                 src={doctor.image}
                 alt={doctor.name}
