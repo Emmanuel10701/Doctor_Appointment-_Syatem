@@ -59,6 +59,15 @@ const LoginPage: React.FC = () => {
   };
 
   return (
+    <>
+    <div className="fixed top-0 left-0 w-full bg-white border-b border-blue-300 bg-transparent py-4 z-50 flex items-center justify-between">
+      <div className="container mx-auto flex items-center px-4 md:px-8">
+        <div className="w-44 cursor-pointer flex items-center">
+          <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
+          <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md">Admin</span>
+        </div>
+      </div>
+    </div>
     <div className="flex flex-col min-h-screen bg-gray-100 p-4">
       <div className="flex flex-col items-center justify-center flex-1">
         <div className="w-full max-w-xl p-12 bg-white shadow-lg rounded-lg mb-8">
@@ -136,6 +145,7 @@ const LoginPage: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

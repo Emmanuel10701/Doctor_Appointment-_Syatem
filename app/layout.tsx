@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Wrapper from "../app/wrapper/page"
 import ClientLayout from "../app/_app";
 import './globals.css'; // Adjust the path as needed
 
@@ -14,8 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-gray-100">
-        <ClientLayout>{children}</ClientLayout>
+   <body className="bg-gray-100">
+      <Wrapper>
+      <ClientLayout>{children}</ClientLayout>
+      </Wrapper>
       </body>
     </html>
   );

@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 import Link from 'next/link';
+import Image from 'next/image'
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -47,6 +48,16 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
+
+    <>
+    <div className="fixed top-0 left-0 w-full bg-white border-b border-blue-300 bg-transparent py-4 z-50 flex items-center justify-between">
+      <div className="container mx-auto flex items-center px-4 md:px-8">
+        <div className="w-44 cursor-pointer flex items-center">
+          <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
+          <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md">Admin</span>
+        </div>
+      </div>
+    </div>
     <div className="flex items-center justify-center min-h-screen p-4 bg-slate-100">
       <form onSubmit={handleSubmit} className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg">
         <h2 className="text-3xl mt-10 text-slate-700 font-extrabold mb-6 text-center">🔓Forgot Password</h2>
@@ -95,6 +106,7 @@ const ForgotPasswordPage: React.FC = () => {
       </form>
       <ToastContainer />
     </div>
+    </>
   );
 };
 
