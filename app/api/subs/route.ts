@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
+import Image from "next/image";
 import prisma from '../../../libs/prisma'; // Adjust the import according to your project structure
 
 export async function POST(request: Request) {
@@ -26,9 +28,52 @@ export async function POST(request: Request) {
       },
     });
 
+    // Send welcome email
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const subject = 'Welcome to Prescripto!';
+    const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/assets/assets_frontend/logo.svg`; // Ensure this points to the correct URL
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: subject,
+      html: `
+        <div style="font-family: 'Arial', sans-serif; background-color: #f4f4f4; padding: 20px; margin: 0;">
+          <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+            <div style="background-color: #1e90ff; padding: 20px; text-align: center; color: white;">
+              <h1 style="margin: 0; font-size: 24px;">
+                <img src="${logoUrl}" alt="Logo" width="176" height="50" />
+              </h1>
+              <p style="margin: 0; font-size: 16px;">Thank you for subscribing!</p>
+            </div>
+            <div style="padding: 20px; line-height: 1.6;">
+              <p style="font-size: 16px; color: #333;">
+                Welcome to Prescripto, your trusted partner in managing your healthcare needs conveniently and efficiently. At Prescripto, we understand the challenges individuals face when it comes to scheduling doctor appointments and managing their health records.
+              </p>
+              <p style="margin-top: 20px; font-size: 14px; color: #555;">Stay tuned for updates!</p>
+              <a href="http://localhost:3000/allsoctors" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #1e90ff; color: white; text-decoration: none; border-radius: 5px;">Visit Our Doctors</a>
+            </div>
+            <div style="background-color: #f9f9f9; padding: 15px; text-align: center;">
+              <p style="font-size: 12px; color: #888;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
+              <a href="#" style="color: #1e90ff; text-decoration: none; font-weight: bold;">Unsubscribe</a>
+            </div>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions); // Send email
+
     return NextResponse.json({ message: 'Subscription successful!', subscription }, { status: 201 });
   } catch (error) {
-    console.error('Error creating subscription:', error);
+    console.error('Error creating subscription or sending email:', error);
     return NextResponse.json({ error: 'Subscription failed. Please try again later.' }, { status: 500 });
   }
 }
@@ -38,7 +83,7 @@ export async function GET() {
     // Fetch all subscriptions ordered from the latest to the oldest
     const subscriptions = await prisma.subscription.findMany({
       orderBy: {
-        createdAt: 'desc', // Assuming you have a `createdAt` field for timestamps
+        createdAt: 'desc',
       },
     });
 
