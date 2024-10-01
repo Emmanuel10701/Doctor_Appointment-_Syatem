@@ -20,7 +20,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
 
   // Define pages to exclude Navbar and Footer
-  const excludedPaths = ['/login', '/register', '/forgot', '/admin', "/profilePage",'/doctorpage'];
+  const excludedPaths = ['/login', '/register', '/forgot', '/admin', '/reset',"/profilePage",'/doctorpage'];
 
   const isExcluded = excludedPaths.includes(pathname);
 

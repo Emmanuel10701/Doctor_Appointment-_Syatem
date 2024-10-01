@@ -1,13 +1,13 @@
 "use client";
 import React, { useState } from 'react';
 import axios from 'axios';
-import { FaUser, FaEnvelope, FaLock, FaGithub, FaGoogle, FaEye, FaEyeSlash } from 'react-icons/fa'; 
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'; 
 import Link from 'next/link';
 import { CircularProgress } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Image from "next/image"
-import {useRouter} from "next/navigation"
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -16,12 +16,7 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  const handleSocialLogin = (provider: string) => {
-    console.log(`Sign in with ${provider}`);
-  };
-
-
-  const router = useRouter()
+  const router = useRouter();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,30 +29,26 @@ const RegisterPage: React.FC = () => {
         password,
       });
 
-      toast.success("successifuly registered login");
+      toast.success("Successfully registered. Please log in.");
       setUsername('');
       setEmail('');
       setPassword('');
-      router.push('/login')
+      router.push('/login');
       
     } catch (error: any) {
       if (error.response) {
-        // Check if the error response is valid and contains the expected format
         const result = error.response.data;
-
         if (result.errors) {
           Object.keys(result.errors).forEach((key) => {
             toast.error(result.errors[key]);
           });
         } else {
-          toast.error(result.message || 'An error occurred. Please try again.' );
+          toast.error(result.message || 'An error occurred. Please try again.');
           console.error(error);
-          
         }
       } else {
-        toast.error('Registration failed. Please try again.' );
+        toast.error('Registration failed. Please try again.');
         console.error(error);
-
       }
     } finally {
       setLoading(false);
@@ -66,110 +57,94 @@ const RegisterPage: React.FC = () => {
 
   return (
     <>
-    <div className="fixed top-0 left-0 w-full bg-white border-b border-blue-300 bg-transparent py-4 z-50 flex items-center justify-between">
-    <div className="container mx-auto flex items-center px-4 md:px-8">
-      <div className="w-44 cursor-pointer flex items-center">
-        <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
-        <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md">Admin</span>
-      </div>
-    </div>
-  </div>
-    <div className="flex flex-col min-h-screen bg-gray-100 p-4">
-      <div className="flex flex-col items-center justify-center flex-1">
-        <div className="w-full max-w-xl p-12 bg-white shadow-lg rounded-lg mb-8">
-          <h2 className="text-4xl font-extrabold text-center mb-6 text-slate-600">🔏 Register</h2>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="relative">
-              <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-                placeholder="Username"
-                required
-              />
-              <FaUser className="absolute left-3 top-3 text-gray-500 text-xl" />
-            </div>
-            <div className="relative">
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-                placeholder="Email Address"
-                required
-              />
-              <FaEnvelope className="absolute left-3 top-3 text-gray-500 text-xl" />
-            </div>
-            <div className="relative">
-              <input
-                type={passwordVisible ? 'text' : 'password'}
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-                placeholder="Password"
-                required
-              />
-              <FaLock className="absolute left-3 top-3 text-gray-500 text-xl" />
-              <div
-                className="absolute right-3 top-3 text-gray-500 text-xl cursor-pointer"
-                onClick={() => setPasswordVisible(!passwordVisible)}
-              >
-                {passwordVisible ? <FaEyeSlash /> : <FaEye />}
-              </div>
-            </div>
-            <button
-              type="submit"
-              className={`w-full py-4 text-white font-bold rounded-lg transition-colors bg-blue-500 relative ${loading ? 'bg-blue-500 border-2 border-indigo-800' : 'hover:bg-blue-600'}`}
-            >
-              {loading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <span className="text-white">Processing...</span>
-                  <CircularProgress size={24} color="inherit" style={{ color: "white" }} />
-                </div>
-              ) : (
-                "Sign Up"
-              )}
-            </button>
-
-            <div className="mt-8 text-center">
-              <p className="text-lg font-semibold mb-4">Or sign up with</p>
-              <div className="flex justify-center space-x-8">
-                <div className="flex flex-col items-center">
-                  <FaGithub
-                    onClick={() => handleSocialLogin('GitHub')}
-                    className="text-gray-800 text-2xl cursor-pointer hover:text-gray-600"
-                  />
-                  <span className="text-gray-600 mt-2">GitHub</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <FaGoogle
-                    onClick={() => handleSocialLogin('Google')}
-                    className="text-red-600 text-2xl cursor-pointer hover:text-red-400"
-                  />
-                  <span className="text-red-600 mt-2">Google</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="text-center mt-4">
-              Already have an account?
-              <Link href="/login">
-                <span className="text-blue-500 hover:underline"> Log in</span>
-              </Link>
-            </div>
-          </form>
-
-          <ToastContainer />
+      <div className="fixed top-0 left-0 mb-10 w-full bg-white border-b border-blue-300 bg-transparent py-4 z-50 flex items-center justify-between">
+        <div className="container mx-auto flex items-center px-4 md:px-8">
+          <div className="w-44 cursor-pointer flex items-center">
+            <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
+            <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md">Register</span>
+          </div>
         </div>
       </div>
-    </div>
-    </>
+      <div className="flex flex-col mt-10 min-h-screen bg-gray-100 p-4">
+        <div className="flex flex-col items-center justify-center flex-1">
+          <div className="w-full max-w-xl p-12 bg-white shadow-lg rounded-lg mb-8">
+            <h2 className="text-4xl font-extrabold text-center mb-6 text-slate-600">🔏 Register</h2>
+            <div className="flex flex-col items-center mb-6">
+              <div className="w-44 cursor-pointer flex items-center">
+                <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
+              </div>
+              <h2 className="text-2xl font-bold text-center mt-4">Welcome to the Appointment System</h2>
+              <p className="text-center text-gray-600 mt-2">Please create an account to manage your appointments.</p>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="relative">
+                <input
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-bold" // Increased boldness
+                  placeholder="Username"
+                  required
+                />
+                <FaUser className="absolute left-3 top-3 text-gray-500 text-xl" />
+              </div>
+              <div className="relative">
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-bold" // Increased boldness
+                  placeholder="Email Address"
+                  required
+                />
+                <FaEnvelope className="absolute left-3 top-3 text-gray-500 text-xl" />
+              </div>
+              <div className="relative">
+                <input
+                  type={passwordVisible ? 'text' : 'password'}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-bold" // Increased boldness
+                  placeholder="Password"
+                  required
+                />
+                <FaLock className="absolute left-3 top-3 text-gray-500 text-xl" />
+                <div
+                  className="absolute right-3 top-3 text-gray-500 text-xl cursor-pointer"
+                  onClick={() => setPasswordVisible(!passwordVisible)}
+                >
+                  {passwordVisible ? <FaEyeSlash /> : <FaEye />}
+                </div>
+              </div>
+              <button
+                type="submit"
+                className={`w-full py-4 text-white font-bold rounded-lg transition-colors bg-blue-500 relative ${loading ? 'bg-blue-500 border-2 border-indigo-800' : 'hover:bg-blue-600'}`}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <span className="text-white">Processing...</span>
+                    <CircularProgress size={24} color="inherit" style={{ color: "white" }} />
+                  </div>
+                ) : (
+                  "Sign Up"
+                )}
+              </button>
+              <div className="text-center mt-4">
+                Already have an account?
+                <Link href="/login">
+                  <span className="text-blue-500 hover:underline"> Log in</span>
+                </Link>
+              </div>
+            </form>
 
+            <ToastContainer />
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 

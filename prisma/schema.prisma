@@ -1,3 +1,5 @@
+// schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -24,7 +26,8 @@ model User {
   accounts             Account[]               // Relation to NextAuth Accounts
   sessions             Session[]               // Relation to NextAuth Sessions
   verificationTokens    VerificationToken[]    // Relation for password reset tokens
-  passwordReset    passwordReset[]    // Relation for password reset tokens
+  passwordReset        passwordReset[]         // Relation for password reset tokens
+  doctors              Doctor[]                // Relation to doctors associated with this user
 }
 
 model Subscription {
@@ -78,4 +81,20 @@ model passwordReset {
   expires              DateTime
 
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+model Doctor {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String   @unique
+  specialty   String
+  experience  String
+  fees        String
+  education   String
+  address1    String
+  address2    String?
+  aboutMe     String?
+  image       String?
+  createdAt   DateTime @default(now())
+  userId      String   @db.ObjectId // Foreign key to the User model
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

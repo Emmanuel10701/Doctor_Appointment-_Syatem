@@ -6,10 +6,10 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, email, password } = body;
+    const { name, email, password, role } = body;
 
     // Check for missing fields
-    if (!username || !email || !password) {
+    if (!name || !email || !password || !role) {
       return new NextResponse(
         JSON.stringify({ message: 'Missing Fields' }),
         { status: 400 }
@@ -34,14 +34,16 @@ export async function POST(request: Request) {
     // Create new user
     const user = await prisma.user.create({
       data: {
-        name: username, // Change here to save username as name
+        name,
         email,
         hashedPassword,
+        role, // Include role in user creation
       },
       select: {
         id: true,
         name: true,
         email: true,
+        role: true, // Select the role field
         createdAt: true,
         updatedAt: true,
       },
@@ -65,6 +67,7 @@ export async function GET() {
         id: true,
         name: true,
         email: true,
+        role: true, // Include role in user retrieval
         createdAt: true,
         updatedAt: true,
       },

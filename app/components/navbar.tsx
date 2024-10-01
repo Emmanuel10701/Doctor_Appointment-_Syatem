@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
 
 const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const menuItems = [
     { name: 'Home', path: '/' },
@@ -22,7 +25,10 @@ const Navbar: React.FC = () => {
     setMenuOpen(prev => !prev);
   };
 
-  // Ensure menuOpen state is only set on the client
+  const toggleDropdown = () => {
+    setDropdownOpen(prev => !prev);
+  };
+
   useEffect(() => {
     setMenuOpen(false); // Reset state if needed
   }, []);
@@ -42,10 +48,39 @@ const Navbar: React.FC = () => {
             ))}
           </ul>
         </div>
-        <div className="hidden md:flex">
-          <button className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-800 transition duration-300">
-            Create Account
-          </button>
+        <div className="hidden md:flex gap-4">
+          {!session ? (
+            <>
+              <button 
+                onClick={() => router.push('/register')} 
+                className="bg-transparent border border-blue-600 text-blue-600 px-5 py-2 rounded-full hover:bg-blue-600 hover:text-white transition duration-300">
+                Sign Up
+              </button>
+              <button 
+                onClick={() => router.push('/login')} 
+                className="bg-transparent border border-blue-600 text-blue-600 px-5 py-2 rounded-full hover:bg-blue-600 hover:text-white transition duration-300">
+                Sign In
+              </button>
+            </>
+          ) : (
+            <div className="relative">
+              <button 
+                onClick={toggleDropdown} 
+                className="flex items-center bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-800 transition duration-300">
+                <Image src={session.user?.image || '/assets/assets_frontend/profile_pic.png'} alt="User Avatar" width={30} height={30} className="rounded-full mr-2" />
+                {session.user?.name}
+              </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 bg-white border rounded shadow-lg">
+                  <ul className="py-2">
+                    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer" onClick={() => router.push('/appointments')}>Appointments</li>
+                    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer" onClick={() => router.push('/profile')}>Profile</li>
+                    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer" onClick={() => signOut()}>Logout</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="md:hidden">
           <button onClick={toggleMenu} className="text-blue-600">
@@ -62,9 +97,20 @@ const Navbar: React.FC = () => {
               </li>
             ))}
             <li>
-              <button className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-800 transition duration-300">
-                Create Account
-              </button>
+              {!session ? (
+                <>
+                  <button onClick={() => router.push('/signup')} className="bg-transparent border border-blue-600 text-blue-600 px-5 py-2 rounded-full hover:bg-blue-600 hover:text-white transition duration-300">
+                    Sign Up
+                  </button>
+                  <button onClick={() => router.push('/signin')} className="bg-transparent border border-blue-600 text-blue-600 px-5 py-2 rounded-full hover:bg-blue-600 hover:text-white transition duration-300">
+                    Sign In
+                  </button>
+                </>
+              ) : (
+                <button onClick={toggleDropdown} className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-800 transition duration-300">
+                  User Menu
+                </button>
+              )}
             </li>
           </ul>
         </nav>

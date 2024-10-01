@@ -85,6 +85,15 @@ const PatientProfile: React.FC = () => {
   const today = new Date().toISOString().split('T')[0];
 
   return (
+    <>
+    <div className="fixed top-0 left-0 w-full mb-10 bg-white border-b border-blue-300 bg-transparent py-4 z-50 flex items-center justify-between">
+      <div className="container mx-auto flex items-center px-4 md:px-8">
+        <div className="w-44 cursor-pointer flex items-center">
+          <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
+          <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md">Profile </span>
+        </div>
+      </div>
+    </div>
     <div className="flex flex-col justify-center items-center mt-20 h-screen">
       <ToastContainer />
       <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-4xl flex flex-col items-center">
@@ -206,6 +215,7 @@ const PatientProfile: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
