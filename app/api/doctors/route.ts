@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
+    const feesString = String(fees);
 
     // Check if the email is already in use
     const existingDoctor = await prisma.doctor.findUnique({
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
         email,
         specialty,
         experience,
-        fees,
+        fees: feesString, // Use the string representation of fees
         education,
         address1,
         address2,

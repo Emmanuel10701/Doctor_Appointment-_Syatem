@@ -98,3 +98,15 @@ model Doctor {
   userId      String   @db.ObjectId // Foreign key to the User model
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+model Appointment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  patientName String
+  doctorName  String
+  specialty   String
+  date        DateTime
+  time        String
+  fee         Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
