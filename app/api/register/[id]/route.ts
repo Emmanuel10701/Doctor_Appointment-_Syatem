@@ -1,128 +1,64 @@
-import bcrypt from 'bcryptjs'; 
+import bcrypt from 'bcryptjs';
 import prisma from '../../../../libs/prisma';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-// POST request: Register a new user
-export async function POST(request: Request) {
+// Handle GET, PUT, and DELETE requests for a single user
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+
   try {
-    const body = await request.json();
-    const { name, email, password, role } = body;
-
-    // Check for missing fields
-    if (!name || !email || !password || !role) {
-      return new NextResponse(
-        JSON.stringify({ message: 'Missing Fields' }),
-        { status: 400 }
-      );
-    }
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return new NextResponse(
-        JSON.stringify({ message: 'Email already exists' }),
-        { status: 400 }
-      );
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        hashedPassword,
-        role,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    return new NextResponse(JSON.stringify(user), { status: 201 });
-  } catch (error) {
-    console.error(error);
-    return new NextResponse(
-      JSON.stringify({ message: 'Internal Server Error' }),
-      { status: 500 }
-    );
-  }
-}
-
-// GET request: Retrieve all users
-export async function GET() {
-  try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    return new NextResponse(JSON.stringify(users), { status: 200 });
-  } catch (error) {
-    console.error(error);
-    return new NextResponse(
-      JSON.stringify({ message: 'Internal Server Error' }),
-      { status: 500 }
-    );
-  }
-}
-
-// PUT request: Update a user by ID
-export async function PUT(request: Request) {
-  try {
-    const body = await request.json();
-    const { id, name, email, password, role } = body;
-
-    // Check for missing fields
-    if (!id || !name || !email || !role) {
-      return new NextResponse(
-        JSON.stringify({ message: 'Missing Fields' }),
-        { status: 400 }
-      );
-    }
-
-    // Check if user exists
-    const existingUser = await prisma.user.findUnique({
+    // Fetch a single user by ID
+    const user = await prisma.user.findUnique({
       where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
-    if (!existingUser) {
+    if (!user) {
       return new NextResponse(
         JSON.stringify({ message: 'User not found' }),
         { status: 404 }
       );
     }
 
-    // Hash the password if it is provided
-    let hashedPassword;
-    if (password) {
-      hashedPassword = await bcrypt.hash(password, 10);
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error(error);
+    return new NextResponse(
+      JSON.stringify({ message: 'Internal Server Error' }),
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+
+  try {
+    const body = await req.json();
+    const { name, email, role } = body;
+
+    // Check for required fields
+    if (!name && !email && !role) {
+      return new NextResponse(
+        JSON.stringify({ message: 'No fields to update' }),
+        { status: 400 }
+      );
     }
 
     // Update user
     const updatedUser = await prisma.user.update({
       where: { id },
       data: {
-        name,
-        email,
-        ...(hashedPassword && { hashedPassword }), // Update password only if provided
-        role,
+        ...(name && { name }),
+        ...(email && { email }),
+        ...(role && { role }),
       },
       select: {
         id: true,
@@ -134,7 +70,7 @@ export async function PUT(request: Request) {
       },
     });
 
-    return new NextResponse(JSON.stringify(updatedUser), { status: 200 });
+    return NextResponse.json(updatedUser);
   } catch (error) {
     console.error(error);
     return new NextResponse(
@@ -144,37 +80,19 @@ export async function PUT(request: Request) {
   }
 }
 
-// DELETE request: Delete a user by ID
-export async function DELETE(request: Request) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+
   try {
-    const { id } = await request.json();
-
-    // Check for missing ID
-    if (!id) {
-      return new NextResponse(
-        JSON.stringify({ message: 'Missing ID' }),
-        { status: 400 }
-      );
-    }
-
-    // Check if user exists
-    const existingUser = await prisma.user.findUnique({
-      where: { id },
-    });
-
-    if (!existingUser) {
-      return new NextResponse(
-        JSON.stringify({ message: 'User not found' }),
-        { status: 404 }
-      );
-    }
-
-    // Delete user
+    // Delete user by ID
     await prisma.user.delete({
       where: { id },
     });
 
-    return new NextResponse(JSON.stringify({ message: 'User deleted successfully' }), { status: 200 });
+    return new NextResponse(
+      JSON.stringify({ message: 'User deleted successfully' }),
+      { status: 204 }
+    );
   } catch (error) {
     console.error(error);
     return new NextResponse(
