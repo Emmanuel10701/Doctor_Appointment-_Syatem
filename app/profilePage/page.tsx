@@ -34,7 +34,7 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
   const [isDataSubmitted, setIsDataSubmitted] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const apiUrl = '/api/profile'; // Base API URL
+  const apiUrl = 'http://localhost:3000/api/profile';
 
   useEffect(() => {
     if (patientId) {
@@ -42,7 +42,7 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
         try {
           const response = await axios.get(`${apiUrl}/${patientId}`);
           setPatientDetails(response.data);
-        } catch (error:any) {
+        } catch (error: any) {
           toast.error(`Error fetching patient: ${error.message}`);
         }
       };
@@ -73,10 +73,10 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
 
     try {
       if (patientId) {
-        await axios.put(`${apiUrl}/${patientId}`, formData);
+        await axios.put(`${apiUrl}/${patientId}`, formData); // Update existing profile
         toast.success('Profile updated successfully');
       } else {
-        await axios.post(apiUrl, formData);
+        await axios.post(apiUrl, formData); // Create new profile
         toast.success('Profile created successfully');
       }
       setIsDataSubmitted(true);
@@ -107,7 +107,6 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
       <div className="flex flex-col justify-center items-center mt-20 h-screen">
         <ToastContainer />
         <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-4xl flex flex-col items-center">
-          {/* Image Section */}
           <div className="flex-none mb-6">
             <label className="cursor-pointer bg-slate-500 rounded-full">
               <Image
@@ -125,7 +124,6 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
             </label>
           </div>
 
-          {/* Form Section */}
           <div className="flex w-full">
             <div className="flex-1 pr-4">
               <h3 className="text-lg font-bold mb-2">Patient Information</h3>
@@ -141,7 +139,7 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
                     value={patientDetails[key as keyof PatientDetails] as string}
                     onChange={handleChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                    disabled={!isEditing} // Disable if not editing
+                    disabled={!isEditing}
                   />
                 </div>
               ))}
@@ -158,7 +156,7 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
                   onChange={handleChange}
                   max={today}
                   className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                  disabled={!isEditing} // Disable if not editing
+                  disabled={!isEditing}
                 />
               </div>
 
@@ -169,7 +167,7 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
                   value={patientDetails.gender}
                   onChange={handleChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                  disabled={!isEditing} // Disable if not editing
+                  disabled={!isEditing}
                 >
                   <option value="">Select Gender</option>
                   <option value="Male">Male</option>
@@ -189,14 +187,13 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
                     value={patientDetails[key as keyof PatientDetails] as string}
                     onChange={handleChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                    disabled={!isEditing} // Disable if not editing
+                    disabled={!isEditing}
                   />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex justify-around items-center mt-6 w-full">
             {!isDataSubmitted && !isSubmitting && (
               <button 

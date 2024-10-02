@@ -121,7 +121,7 @@ const Dashboard: React.FC = () => {
      </h1>              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 place-items-center gap-6 mb-6">
                 <div className="p-6 hover:shadow-lg bg-white rounded-lg shadow-md">
                   <h3 className="text-md text-center text-slate-600 font-bold">💰 Earnings</h3>
-                  <p className="text-2xl font-bold text-center text-purple-700">${/* Earnings Amount */} 0</p>
+                  <p className="text-2xl font-bold text-center text-purple-700">${/* Earnings Amount */} 20,000</p>
                 </div>
                 <div className="p-6 bg-white hover:shadow-lg rounded-lg shadow-md">
                   <h3 className="text-md text-center text-slate-600 font-bold">📅 Appointments</h3>
@@ -141,40 +141,68 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <>
-              {activeTab === 'appointments' && (
+            {activeTab === 'appointments' && (
+  <>
+    <h2 className="text-3xl font-bold mb-6 text-gray-800 shadow-lg shadow-gray-300">
+       Appointments
+    </h2>
+    <table className="min-w-full bg-white border border-gray-300 shadow-lg">
+      <thead>
+        <tr className="bg-gray-100 text-purple-700 font-semibold shadow-md shadow-gray-200">
+          <th className="py-3 px-4 border-b">Doctor</th>
+          <th className="py-3 px-4 border-b">Appointment Date</th>
+          <th className="py-3 px-4 border-b">Status</th>
+          <th className="py-3 px-4 border-b">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {appointments.map((appointment, index) => (
+          <tr
+            key={appointment.id}
+            className={index % 2 === 0 ? 'bg-purple-50' : 'bg-green-50'}
+          >
+            <td className="py-3 px-4 border-b text-gray-700 font-medium">
+              {appointment.doctor}
+            </td>
+            <td className="py-3 px-4 border-b text-gray-700 font-medium">
+              {appointment.date}
+            </td>
+            <td
+              className={`py-3 px-4 border-b font-semibold ${
+                appointment.status === 'Confirmed'
+                  ? 'text-green-600'
+                  : 'text-red-600'
+              }`}
+            >
+              {appointment.status}
+            </td>
+            <td className="py-3 px-4 border-b">
+              {appointment.status === 'Confirmed' ? (
                 <>
-                  <h2 className="text-2xl font-semibold mb-4">Appointments</h2>
-                  <table className="min-w-full bg-white border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="py-2 border-b">Doctor</th>
-                        <th className="py-2 border-b">Appointment Date</th>
-                        <th className="py-2 border-b">Status</th>
-                        <th className="py-2 border-b">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {appointments.map((appointment) => (
-                        <tr key={appointment.id}>
-                          <td className="py-2 border-b">{appointment.doctor}</td>
-                          <td className="py-2 border-b">{appointment.date}</td>
-                          <td className="py-2 border-b">{appointment.status}</td>
-                          <td className="py-2 border-b">
-                            {appointment.status === 'Confirmed' ? (
-                              <>
-                                <button className="text-red-600" onClick={() => handleCancelAppointment(appointment.id)}>Cancel</button>
-                                <button className="text-green-600 ml-2" onClick={() => completeAppointment(appointment.fee)}>Complete</button>
-                              </>
-                            ) : (
-                              <span>{appointment.status}</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <button
+                    className="text-red-600 font-semibold hover:underline"
+                    onClick={() => handleCancelAppointment(appointment.id)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="text-green-600 font-semibold ml-4 hover:underline"
+                    onClick={() => completeAppointment(appointment.fee)}
+                  >
+                    Complete
+                  </button>
                 </>
+              ) : (
+                <span>{appointment.status}</span>
               )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </>
+)}
+
 
               {activeTab === 'profile' && (
                 <div>

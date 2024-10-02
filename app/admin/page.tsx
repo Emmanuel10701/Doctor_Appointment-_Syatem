@@ -48,6 +48,13 @@ const Dashboard: React.FC = () => {
       setSidebarOpen(false);
     }, 1000); // Simulate a loading delay
   };
+ 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [subject, setSubject] = useState('');
+  const [text, setText] = useState('');
+
+  // ... existing useEffect and functions
+
   const fetchSubscribers = async () => {
     try {
       const response = await axios.get<Subscriber[]>('http://localhost:3000/api/subs');
@@ -61,24 +68,18 @@ const Dashboard: React.FC = () => {
     fetchSubscribers();
   }, []);
 
- 
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [subject, setSubject] = useState('');
-  const [text, setText] = useState('');
-
-  // ... existing useEffect and functions
-
-  const handleSendEmail = async () => {
+  const handleSendEmail = async (subject: string, message: string) => {
     try {
-      // Make sure to include subscribers in the request
       await axios.post('http://localhost:3000/api/mailing', { 
         subject, 
-        message: text, // Ensure to match the backend's expected structure
-        subscribers // Include the subscribers array
+        message, 
+        subscribers 
       });
-      toast.success('Email sent successfully!');
-      setIsModalOpen(false); // Close the modal after sending
+      toast.success('Email sent successfully to all subscribers!');
+      alert('Email sent successfully to all subscribers!');
+      setSubject('');
+      setText('');  
+      setIsModalOpen(false);
     } catch (error) {
       toast.error('Failed to send email');
     }
@@ -284,37 +285,28 @@ if (error) {
               {activeTab === 'addDoctor' && <AddDoctorForm />}
               
               {activeTab === 'subscribers' && (
-                <div>
-                  <h1 className="text-xl font-bold mb-4">Subscribers List</h1>
-                  <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="bg-blue-500 text-white p-2 rounded mb-4"
-                >
-                  Mail All Subscribers
-                </button>
-                <MailModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    onSend={handleSendEmail}
-                  />
-                  <table className="min-w-full bg-white border border-gray-300">
-                    <thead>
-                      <tr>
-                        <th className="py-2 px-4 border-b">Email</th>
-                        <th className="py-2 px-4 border-b">Date Added</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {subscribers.map((subscriber) => (
-                        <tr key={subscriber.email}>
-                          <td className="py-2 px-4 border-b">{subscriber.email}</td>
-                          <td className="py-2 px-4 border-b">{new Date(subscriber.createdAt).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+            <div>
+              <h1 className="text-xl font-bold mb-4">Subscribers List</h1>
+              <button onClick={() => setIsModalOpen(true)} className="bg-blue-500 text-white p-2 rounded mb-4">Mail All Subscribers</button>
+              <MailModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSend={handleSendEmail} />
+              <table className="min-w-full bg-white border border-gray-300">
+                <thead>
+                  <tr>
+                    <th className="py-2 px-4 border-b">Email</th>
+                    <th className="py-2 px-4 border-b">Date Added</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscribers.map((subscriber) => (
+                    <tr key={subscriber.email}>
+                      <td className="py-2 px-4 border-b">{subscriber.email}</td>
+                      <td className="py-2 px-4 border-b">{new Date(subscriber.createdAt).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
             </>
           )}
         </main>

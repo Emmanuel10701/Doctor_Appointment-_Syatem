@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 interface MailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSend: (subject: string, text: string) => Promise<void>; // Updated to handle promises
+  onSend: (subject: string, text: string) => Promise<void>;
 }
 
 const MailModal: React.FC<MailModalProps> = ({ isOpen, onClose, onSend }) => {
@@ -34,7 +34,7 @@ const MailModal: React.FC<MailModalProps> = ({ isOpen, onClose, onSend }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full relative">
         <button className="absolute top-2 right-2" onClick={onClose}>
-          <FaTimes className="text-gray-600" />
+          <FaTimes className="text-gray-600 hover:text-red-500 transition" />
         </button>
         <h2 className="text-xl font-bold mb-4">Send Email</h2>
         <input
@@ -42,18 +42,18 @@ const MailModal: React.FC<MailModalProps> = ({ isOpen, onClose, onSend }) => {
           placeholder="Subject"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          className="border border-gray-300 p-2 rounded w-full mb-4"
+          className="border border-gray-300 p-2 rounded w-full mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <textarea
           placeholder="Email Content"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="border border-gray-300 p-2 rounded w-full mb-4"
+          className="border border-gray-300 p-2 rounded w-full mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
           rows={5}
         />
         <button
           onClick={handleSend}
-          className={`bg-blue-500 text-white p-2 rounded w-full transition duration-300 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`bg-transparent border border-blue-500 text-blue-500 p-2 rounded-full w-full transition duration-300 hover:bg-blue-500 hover:text-white ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           disabled={loading}
         >
           {loading ? (

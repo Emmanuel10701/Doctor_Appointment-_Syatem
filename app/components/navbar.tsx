@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+import { FiUser, FiCalendar, FiLogOut } from 'react-icons/fi'; // Importing icons for dropdown
 
 const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
@@ -19,9 +20,8 @@ const Navbar: React.FC = () => {
     { name: 'All Doctors', path: '/alldoctors' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
-    // Additional navigation items
     { name: 'Admin', path: '/admin' },
-    { name: 'Doctor', path: '/doctorpage' }
+    { name: 'Doctor', path: '/doctorpage' },
   ];
 
   const toggleMenu = () => {
@@ -30,6 +30,11 @@ const Navbar: React.FC = () => {
 
   const toggleDropdown = () => {
     setDropdownOpen(prev => !prev);
+  };
+
+  const handleMenuClick = (path: string) => {
+    router.push(path);
+    setMenuOpen(false); // Close navbar on mobile after link click
   };
 
   useEffect(() => {
@@ -45,8 +50,10 @@ const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center gap-6">
           <ul className="flex space-x-6 text-blue-600 font-medium">
             {menuItems.map((item, index) => (
-              <li key={index} className={`hover:text-blue-800 transition duration-200 ${pathname === item.path ? 'text-blue-900 font-bold border-b-2 border-blue-900' : ''}`}>
-                <span onClick={() => router.push(item.path)} className="cursor-pointer">{item.name}</span>
+              <li key={index} className={`hover:text-blue-800 transition duration-200 ${pathname === item.path ? 'border-b-2 border-blue-900' : ''}`}>
+                <span onClick={() => handleMenuClick(item.path)} className="cursor-pointer">
+                  {item.name}
+                </span>
               </li>
             ))}
           </ul>
@@ -76,9 +83,15 @@ const Navbar: React.FC = () => {
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 bg-white border rounded shadow-lg">
                   <ul className="py-2">
-                    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer" onClick={() => router.push('/appointments')}>Appointments</li>
-                    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer" onClick={() => router.push('/profile')}>Profile</li>
-                    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer" onClick={() => signOut()}>Logout</li>
+                    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer flex items-center gap-2" onClick={() => handleMenuClick('/Appointment')}>
+                      <FiCalendar className="text-gray-500" /> Appointments
+                    </li>
+                    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer flex items-center gap-2" onClick={() => handleMenuClick('/profilePage')}>
+                      <FiUser className="text-gray-500" /> Profile
+                    </li>
+                    <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer flex items-center gap-2" onClick={() => signOut()}>
+                      <FiLogOut className="text-gray-500" /> Logout
+                    </li>
                   </ul>
                 </div>
               )}
@@ -95,8 +108,8 @@ const Navbar: React.FC = () => {
         <nav className="md:hidden bg-white border-t border-blue-300 py-4">
           <ul className="flex flex-col items-center space-y-4">
             {menuItems.map((item, index) => (
-              <li key={index} className={`hover:text-blue-800 transition duration-200 ${pathname === item.path ? 'text-blue-900 font-bold border-b-2 border-blue-900' : ''}`}>
-                <span onClick={() => router.push(item.path)} className="cursor-pointer">{item.name}</span>
+              <li key={index} className={`hover:text-blue-800 transition duration-200 ${pathname === item.path ? 'border-b-2 border-blue-900' : ''}`}>
+                <span onClick={() => handleMenuClick(item.path)} className="cursor-pointer">{item.name}</span>
               </li>
             ))}
             <li>
