@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
 import { CircularProgress } from '@mui/material';
+import axios from 'axios';
 
 interface PatientDetails {
   name: string;
@@ -17,8 +18,8 @@ interface PatientDetails {
   image: string | File;
 }
 
-const PatientProfile: React.FC = () => {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
+const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
+  const [isEditing, setIsEditing] = useState<boolean>(true);
   const [patientDetails, setPatientDetails] = useState<PatientDetails>({
     name: '',
     email: '',
@@ -33,6 +34,22 @@ const PatientProfile: React.FC = () => {
   const [isDataSubmitted, setIsDataSubmitted] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  const apiUrl = '/api/profile'; // Base API URL
+
+  useEffect(() => {
+    if (patientId) {
+      const fetchPatientDetails = async () => {
+        try {
+          const response = await axios.get(`${apiUrl}/${patientId}`);
+          setPatientDetails(response.data);
+        } catch (error:any) {
+          toast.error(`Error fetching patient: ${error.message}`);
+        }
+      };
+      fetchPatientDetails();
+    }
+  }, [patientId]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setPatientDetails((prev) => ({ ...prev, [name]: value }));
@@ -45,10 +62,6 @@ const PatientProfile: React.FC = () => {
     }
   };
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
   const handleSave = async () => {
     setIsSubmitting(true);
     const formData = new FormData();
@@ -59,16 +72,13 @@ const PatientProfile: React.FC = () => {
     });
 
     try {
-      const url = patientDetails.name ? '/api/patient/update' : '/api/patient/create';
-      const method = patientDetails.name ? 'POST' : 'PUT';
-
-      const response = await fetch(url, {
-        method: method,
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error('Failed to save profile');
-      toast.success('Profile saved successfully');
+      if (patientId) {
+        await axios.put(`${apiUrl}/${patientId}`, formData);
+        toast.success('Profile updated successfully');
+      } else {
+        await axios.post(apiUrl, formData);
+        toast.success('Profile created successfully');
+      }
       setIsDataSubmitted(true);
     } catch (error: any) {
       toast.error(`Error saving profile: ${error.message}`);
@@ -86,135 +96,133 @@ const PatientProfile: React.FC = () => {
 
   return (
     <>
-    <div className="fixed top-0 left-0 w-full mb-10 bg-white border-b border-blue-300 bg-transparent py-4 z-50 flex items-center justify-between">
-      <div className="container mx-auto flex items-center px-4 md:px-8">
-        <div className="w-44 cursor-pointer flex items-center">
-          <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
-          <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md">Profile </span>
+      <div className="fixed top-0 left-0 w-full mb-10 bg-white border-b border-blue-300 bg-transparent py-4 z-50 flex items-center justify-between">
+        <div className="container mx-auto flex items-center px-4 md:px-8">
+          <div className="w-44 cursor-pointer flex items-center">
+            <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
+            <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md">Profile</span>
+          </div>
         </div>
       </div>
-    </div>
-    <div className="flex flex-col justify-center items-center mt-20 h-screen">
-      <ToastContainer />
-      <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-4xl flex flex-col items-center">
-        {/* Image Section */}
-        <div className="flex-none mb-6">
-          <label className="cursor-pointer bg-slate-500 rounded-full">
-            <Image
-              src={imageUrl}
-              alt="Patient"
-              width={100}
-              height={100}
-              className="h-36 w-36  bg-slate-300 rounded-full object-cover mx-auto"
-            />
-            <input
-              type="file"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </label>
-        </div>
-
-        {/* Form Section */}
-        <div className="flex w-full">
-          {/* Left Column */}
-          <div className="flex-1 pr-4">
-            <h3 className="text-lg font-bold mb-2">Patient Information</h3>
-            <h4 className="text-md font-semibold mb-2">Contact Information</h4>
-            {['name', 'email', 'phone'].map((key) => (
-              <div key={key} className="mb-4">
-                <label className="block text-gray-700 font-bold">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </label>
-                <input
-                  type="text"
-                  name={key}
-                  value={patientDetails[key as keyof PatientDetails] as string}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                  disabled={!isEditing} // Disable if not editing
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Right Column */}
-          <div className="flex-1 pl-4">
-            <h4 className="text-md font-semibold mb-2">Additional Information</h4>
-            <div className="mb-4">
-              <label className="block text-gray-700 font-bold">Birth Date</label>
-              <input
-                type="date"
-                name="birthDate"
-                value={patientDetails.birthDate}
-                onChange={handleChange}
-                max={today}
-                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                disabled={!isEditing} // Disable if not editing
+      <div className="flex flex-col justify-center items-center mt-20 h-screen">
+        <ToastContainer />
+        <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-4xl flex flex-col items-center">
+          {/* Image Section */}
+          <div className="flex-none mb-6">
+            <label className="cursor-pointer bg-slate-500 rounded-full">
+              <Image
+                src={imageUrl}
+                alt="Patient"
+                width={100}
+                height={100}
+                className="h-36 w-36 bg-slate-300 rounded-full object-cover mx-auto"
               />
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
+          </div>
+
+          {/* Form Section */}
+          <div className="flex w-full">
+            <div className="flex-1 pr-4">
+              <h3 className="text-lg font-bold mb-2">Patient Information</h3>
+              <h4 className="text-md font-semibold mb-2">Contact Information</h4>
+              {['name', 'email', 'phone'].map((key) => (
+                <div key={key} className="mb-4">
+                  <label className="block text-gray-700 font-bold">
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                  </label>
+                  <input
+                    type="text"
+                    name={key}
+                    value={patientDetails[key as keyof PatientDetails] as string}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                    disabled={!isEditing} // Disable if not editing
+                  />
+                </div>
+              ))}
             </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-bold">Gender</label>
-              <select
-                name="gender"
-                value={patientDetails.gender}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                disabled={!isEditing} // Disable if not editing
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {['address', 'aboutMe'].map((key) => (
-              <div key={key} className="mb-4">
-                <label className="block text-gray-700 font-bold">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </label>
+            <div className="flex-1 pl-4">
+              <h4 className="text-md font-semibold mb-2">Additional Information</h4>
+              <div className="mb-4">
+                <label className="block text-gray-700 font-bold">Birth Date</label>
                 <input
-                  type="text"
-                  name={key}
-                  value={patientDetails[key as keyof PatientDetails] as string}
+                  type="date"
+                  name="birthDate"
+                  value={patientDetails.birthDate}
                   onChange={handleChange}
+                  max={today}
                   className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                   disabled={!isEditing} // Disable if not editing
                 />
               </div>
-            ))}
+
+              <div className="mb-4">
+                <label className="block text-gray-700 font-bold">Gender</label>
+                <select
+                  name="gender"
+                  value={patientDetails.gender}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  disabled={!isEditing} // Disable if not editing
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {['address', 'aboutMe'].map((key) => (
+                <div key={key} className="mb-4">
+                  <label className="block text-gray-700 font-bold">
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                  </label>
+                  <input
+                    type="text"
+                    name={key}
+                    value={patientDetails[key as keyof PatientDetails] as string}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                    disabled={!isEditing} // Disable if not editing
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-around items-center mt-6 w-full">
+            {!isDataSubmitted && !isSubmitting && (
+              <button 
+                onClick={handleSave} 
+                className="bg-transparent text-blue-500 border border-blue-500 px-4 py-2 rounded-full"
+              >
+                Submit
+              </button>
+            )}
+            {isSubmitting && (
+              <div className="flex rounded-full px-4 py-3 border items-center">
+                <CircularProgress size={24} className="mr-2" />
+                <span>Submitting...</span>
+              </div>
+            )}
+            {isDataSubmitted && !isSubmitting && (
+              <button 
+                onClick={() => setIsEditing(true)} 
+                className="bg-transparent text-green-500 border border-green-500 px-4 py-2 rounded-full"
+              >
+                Edit
+              </button>
+            )}
           </div>
         </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-around items-center mt-6 w-full">
-          {!isDataSubmitted && !isSubmitting && (
-            <button 
-              onClick={handleSave} 
-              className="bg-transparent text-blue-500 border border-blue-500 px-4 py-2 rounded-full"
-            >
-              Submit
-            </button>
-          )}
-          {isSubmitting && (
-            <div className="flex  rounded-full px-4 py-3 border items-center">
-              <CircularProgress size={24} className="mr-2" />
-              <span>Submitting...</span>
-            </div>
-          )}
-          {isDataSubmitted && !isSubmitting && (
-            <button 
-              onClick={handleEdit} 
-              className="bg-transparent text-green-500 border border-green-500 px-4 py-2 rounded-full"
-            >
-              Edit
-            </button>
-          )}
-        </div>
       </div>
-    </div>
     </>
   );
 };

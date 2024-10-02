@@ -1,7 +1,7 @@
 import prisma from '../../../../libs/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Handle GET, PUT, and DELETE requests for a single user
+// Handle GET request for a single patient
 export async function GET(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const id = pathname.split('/').pop(); // Extract ID from the URL
@@ -14,27 +14,29 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Fetch a single user by ID
-    const user = await prisma.user.findUnique({
+    // Fetch a single patient by ID
+    const patient = await prisma.patient.findUnique({
       where: { id: String(id) },
       select: {
-        id: true,
         name: true,
         email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
+        phone: true,
+        birthDate: true,
+        gender: true,
+        address: true,
+        aboutMe: true,
+        image: true,
       },
     });
 
-    if (!user) {
+    if (!patient) {
       return new NextResponse(
-        JSON.stringify({ message: 'User not found' }),
+        JSON.stringify({ message: 'Patient not found' }),
         { status: 404 }
       );
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json(patient);
   } catch (error) {
     console.error(error);
     return new NextResponse(
@@ -44,7 +46,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Update user
+// Update patient
 export async function PUT(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const id = pathname.split('/').pop(); // Extract ID from the URL
@@ -58,24 +60,31 @@ export async function PUT(req: NextRequest) {
   }
 
   try {
-    const updatedUser = await prisma.user.update({
+    const updatedPatient = await prisma.patient.update({
       where: { id: String(id) },
       data: {
         name: body.name,
         email: body.email,
-        role: body.role,
+        phone: body.phone,
+        birthDate: body.birthDate,
+        gender: body.gender,
+        address: body.address,
+        aboutMe: body.aboutMe,
+        image: body.image, // Adjust based on how you handle images
       },
       select: {
-        id: true,
         name: true,
         email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
+        phone: true,
+        birthDate: true,
+        gender: true,
+        address: true,
+        aboutMe: true,
+        image: true,
       },
     });
 
-    return NextResponse.json(updatedUser);
+    return NextResponse.json(updatedPatient);
   } catch (error) {
     console.error(error);
     return new NextResponse(
@@ -85,7 +94,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE request: Delete a user by ID
+// DELETE request: Delete a patient by ID
 export async function DELETE(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const id = pathname.split('/').pop(); // Extract ID from the URL
@@ -98,7 +107,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    await prisma.user.delete({
+    await prisma.patient.delete({
       where: { id: String(id) },
     });
 
