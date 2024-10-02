@@ -1,75 +1,75 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../libs/prisma';
 
-// GET request: Retrieve a single appointment by ID
+// Get a single patient by ID
 export async function GET(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const id = pathname.split('/').pop(); // Extract ID from the URL
 
   if (!id) {
     return new NextResponse(
-      JSON.stringify({ message: 'ID is required' }),
+      JSON.stringify({ error: 'ID is required' }),
       { status: 400 }
     );
   }
 
-  const appointment = await prisma.appointment.findUnique({
+  const patient = await prisma.patient.findUnique({
     where: { id: String(id) },
   });
 
-  if (!appointment) {
+  if (!patient) {
     return new NextResponse(
-      JSON.stringify({ message: 'Appointment not found' }),
+      JSON.stringify({ error: 'Patient not found' }),
       { status: 404 }
     );
   }
 
-  return NextResponse.json(appointment);
+  return NextResponse.json(patient);
 }
 
-// PUT request: Update an appointment by ID
+// Update a patient by ID
 export async function PUT(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const id = pathname.split('/').pop(); // Extract ID from the URL
-  const body = await req.json();
-  const { patientName, doctorName, specialty, date, time, fee } = body;
+  const { name, email, phone, birthDate, gender, address, aboutMe, image } = await req.json();
 
   if (!id) {
     return new NextResponse(
-      JSON.stringify({ message: 'ID is required' }),
+      JSON.stringify({ error: 'ID is required' }),
       { status: 400 }
     );
   }
 
-  // Update appointment
-  const updatedAppointment = await prisma.appointment.update({
+  const updatedPatient = await prisma.patient.update({
     where: { id: String(id) },
     data: {
-      patientName,
-      doctorName,
-      specialty,
-      date: new Date(date), // Ensure date is in the correct format
-      time,
-      fee,
+      name,
+      email,
+      phone: phone || null,
+      birthDate: new Date(birthDate),
+      gender,
+      address,
+      aboutMe,
+      image,
     },
   });
 
-  return NextResponse.json(updatedAppointment);
+  return NextResponse.json(updatedPatient);
 }
 
-// DELETE request: Delete an appointment by ID
+// Delete a patient by ID
 export async function DELETE(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const id = pathname.split('/').pop(); // Extract ID from the URL
 
   if (!id) {
     return new NextResponse(
-      JSON.stringify({ message: 'ID is required' }),
+      JSON.stringify({ error: 'ID is required' }),
       { status: 400 }
     );
   }
 
-  await prisma.appointment.delete({
+  await prisma.patient.delete({
     where: { id: String(id) },
   });
 
