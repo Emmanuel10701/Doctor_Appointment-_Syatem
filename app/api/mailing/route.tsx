@@ -5,8 +5,11 @@ import nodemailer from 'nodemailer';
 export async function POST(request: Request) {
   const { subject, message, subscribers } = await request.json();
 
+  // Log incoming data for debugging
+  console.log('Incoming request data:', { subject, message, subscribers });
+
   // Validate input
-  if (!subject || !message || !subscribers || !Array.isArray(subscribers)) {
+  if (!subject || !message || !subscribers || !Array.isArray(subscribers) || subscribers.length === 0) {
     return NextResponse.json({ error: 'Subject, message, and subscribers are required.' }, { status: 400 });
   }
 
@@ -21,7 +24,7 @@ export async function POST(request: Request) {
 
   try {
     // Send email to each subscriber
-    for (const subscriber of subscribers) {
+    const promises = subscribers.map((subscriber) => {
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: subscriber.email,
@@ -46,12 +49,15 @@ export async function POST(request: Request) {
         `,
       };
 
-      await transporter.sendMail(mailOptions); // Send email
-    }
+      return transporter.sendMail(mailOptions); // Send email for each subscriber
+    });
+
+    // Wait for all email promises to complete
+    await Promise.all(promises);
 
     return NextResponse.json({ message: 'Emails sent successfully!' }, { status: 200 });
   } catch (error) {
     console.error('Error sending emails:', error);
-    return NextResponse.json({ error: 'Error sending emails.' }, { status: 500 });
+    return NextResponse.json({ error: 'Error sending emails. Please try again later.' }, { status: 500 });
   }
 }

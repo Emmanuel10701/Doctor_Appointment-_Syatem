@@ -4,6 +4,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import Image from 'next/image';
+import MailModal from '../components/Modal/page'; // Import the MailModal component
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { signOut } from 'next-auth/react';
 import { FaUserMd, FaCalendarCheck, FaListUl, FaPlus, FaBars,FaEnvelope, FaSignOutAlt } from 'react-icons/fa';
 import { CircularProgress } from '@mui/material';
@@ -58,15 +61,29 @@ const Dashboard: React.FC = () => {
     fetchSubscribers();
   }, []);
 
-  const handleSendEmails = async () => {
+ 
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [subject, setSubject] = useState('');
+  const [text, setText] = useState('');
+
+  // ... existing useEffect and functions
+
+  const handleSendEmail = async () => {
     try {
-      await axios.post('http://localhost:3000/api/sendEmails');
-      alert('Emails sent successfully!');
-    } catch (err) {
-      alert('Failed to send emails');
+      // Make sure to include subscribers in the request
+      await axios.post('http://localhost:3000/api/mailing', { 
+        subject, 
+        message: text, // Ensure to match the backend's expected structure
+        subscribers // Include the subscribers array
+      });
+      toast.success('Email sent successfully!');
+      setIsModalOpen(false); // Close the modal after sending
+    } catch (error) {
+      toast.error('Failed to send email');
     }
   };
-
+;
   const doctors = [
     { id: 1, name: 'Dr. Smith', specialty: 'Dentist', image: '/assets/assets_frontend/doc1.png', available: true },
     { id: 2, name: 'Dr. Jones', specialty: 'General Physician', image: '/assets/assets_frontend/doc2.png', available: false },
@@ -270,11 +287,16 @@ if (error) {
                 <div>
                   <h1 className="text-xl font-bold mb-4">Subscribers List</h1>
                   <button
-                    onClick={handleSendEmails}
-                    className="bg-blue-500 text-white p-2 rounded mb-4"
-                  >
-                    Mail All Subscribers
-                  </button>
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-blue-500 text-white p-2 rounded mb-4"
+                >
+                  Mail All Subscribers
+                </button>
+                <MailModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onSend={handleSendEmail}
+                  />
                   <table className="min-w-full bg-white border border-gray-300">
                     <thead>
                       <tr>
@@ -296,6 +318,7 @@ if (error) {
             </>
           )}
         </main>
+        <ToastContainer />
       </div>
     </>
   );
