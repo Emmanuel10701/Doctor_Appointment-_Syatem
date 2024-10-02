@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import CircularProgress from '@mui/material/CircularProgress';
+import Button from '@mui/material/Button';
 
 interface DoctorDetails {
   name: string;
   email: string;
   specialty: string;
-  password: string;
   experience: string;
   fees: string;
   education: string;
@@ -20,7 +21,6 @@ const randomDoctorDetails: DoctorDetails = {
   name: 'Dr. John Doe',
   email: 'dr.johndoe@example.com',
   specialty: 'Dentist',
-  password: 'securepassword',
   experience: '12 years',
   fees: '150',
   education: 'DDS, University of Dental Science',
@@ -32,6 +32,7 @@ const randomDoctorDetails: DoctorDetails = {
 
 const DoctorProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const [doctorDetails, setDoctorDetails] = useState<DoctorDetails>(randomDoctorDetails);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +62,8 @@ const DoctorProfile: React.FC = () => {
       }
     });
 
+    setIsSaving(true);
+
     try {
       const response = await fetch('/api/doctor/update', {
         method: 'POST',
@@ -72,6 +75,7 @@ const DoctorProfile: React.FC = () => {
     } catch (error: any) {
       toast.error(`Error updating profile: ${error.message}`);
     } finally {
+      setIsSaving(false);
       setIsEditing(false);
     }
   };
@@ -81,59 +85,96 @@ const DoctorProfile: React.FC = () => {
     : URL.createObjectURL(doctorDetails.image);
 
   return (
-    <div className="flex flex-col justify-center items-center mt-20 h-screen">
+    <div className="flex flex-col justify-center w-[80%] mx-auto mt-[5%] items-center h-screen">
       <ToastContainer />
-      <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-4xl">
-        <div className="flex-1 mb-6">
-          <h3 className="text-lg font-bold mb-2">Basic Information</h3>
-          {Object.keys(randomDoctorDetails).map((key) => (
-            <div key={key} className="mb-4">
-              <label className="block text-gray-700 font-bold">
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </label>
-              {isEditing ? (
-                <input
-                  type={key === 'password' ? 'password' : 'text'}
-                  name={key}
-                  value={doctorDetails[key as keyof DoctorDetails] as string}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                />
-              ) : (
-                <span className="font-semibold text-gray-800">
-                  {doctorDetails[key as keyof DoctorDetails]}
-                </span>
-              )}
-            </div>
-          ))}
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold">Profile Image</label>
-            <label className="cursor-pointer">
-              <img
-                src={imageUrl}
-                alt="Doctor"
-                className="h-20 w-20 rounded-full"
-              />
-              {isEditing && (
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              )}
-            </label>
-          </div>
+      <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-6xl">
+        <div className="flex flex-col items-center mb-6">
+          <img src={imageUrl} alt="Doctor" className="h-32 w-32 rounded-full mb-4" />
+          <h3 className="text-xl font-bold mb-2">{doctorDetails.name}</h3>
         </div>
 
-        <div className="flex justify-between mt-6">
+        {isEditing ? (
+          <div className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0">
+            <div className="flex-1 pr-2">
+              {['name', 'email', 'specialty', 'experience', 'fees'].map((key) => (
+                <div key={key}>
+                  <label className="block text-gray-700 font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+                  <input
+                    type="text"
+                    name={key}
+                    value={doctorDetails[key as keyof DoctorDetails] as string}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex-1 pl-2">
+              {['education', 'address1', 'address2', 'aboutMe'].map((key) => (
+                <div key={key}>
+                  <label className="block text-gray-700 font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+                  <input
+                    type="text"
+                    name={key}
+                    value={doctorDetails[key as keyof DoctorDetails] as string}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="block text-gray-700 font-semibold">Profile Image:</label>
+                <label className="cursor-pointer">
+                  <img src={imageUrl} alt="Doctor" className="h-24 w-24 rounded-full mb-2" />
+                  <input type="file" onChange={handleFileChange} className="hidden" />
+                </label>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0">
+            <div className="flex-1 pr-2">
+              {['name', 'email', 'specialty', 'experience', 'fees'].map((key) => (
+                <div key={key}>
+                  <label className="block text-gray-700 font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+                  <span className="text-gray-800 font-medium">{doctorDetails[key as keyof DoctorDetails]}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex-1 pl-2">
+              {['education', 'address1', 'address2', 'aboutMe'].map((key) => (
+                <div key={key}>
+                  <label className="block text-gray-700 font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+                  <span className="text-gray-800 font-medium">{doctorDetails[key as keyof DoctorDetails]}</span>
+                </div>
+              ))}
+              <div>
+                <label className="block text-gray-700 font-semibold">Profile Image:</label>
+                <img src={imageUrl} alt="Doctor" className="h-24 w-24 rounded-full mb-2" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-center mt-6">
           {isEditing ? (
-            <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded">
-              Save Profile
-            </button>
+            <Button
+              onClick={handleSave}
+              variant="outlined"
+              className="flex items-center rounded-full border-transparent text-blue-500 hover:bg-blue-100 transition duration-300 mt-4 p-2"
+              disabled={isSaving}
+            >
+              {isSaving ? <CircularProgress size={24} className="mr-2" /> : null}
+              {isSaving ? 'Submitting...' : 'Save Profile'}
+            </Button>
           ) : (
-            <button onClick={handleEdit} className="bg-green-500 text-white px-4 py-2 rounded">
+            <Button
+              onClick={handleEdit}
+              variant="outlined"
+              className="flex items-center rounded-full border-transparent text-green-500 hover:bg-green-100 transition duration-300 mt-4 p-2"
+            >
               Edit Profile
-            </button>
+            </Button>
           )}
         </div>
       </div>

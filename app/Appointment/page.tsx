@@ -25,7 +25,7 @@ const AppointmentDetail: React.FC = () => {
       if (!session) return;
 
       try {
-        const response = await fetch(`/api/appointments?userId=${session.user.id}`);
+        const response = await fetch(`/api/appointments?id=${session.user.id}`);
         const data = await response.json();
         if (data) {
           setAppointment(data);

@@ -33,7 +33,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: user.id,
+          id: user.id, // Ensure id is returned
           name: user.name,
           email: user.email,
           role: user.role,
@@ -54,7 +54,7 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/error', // Error page
   },
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user }) {
       return true;
     },
     async session({ session, token }) {
@@ -67,6 +67,7 @@ export const authOptions: NextAuthOptions = {
 
           if (user) {
             (session.user as any).role = user.role; // Add role to the session
+            (session.user as any).id = token.id; // Add id to the session
           }
         } catch (error) {
           console.error('Error fetching user role:', error);

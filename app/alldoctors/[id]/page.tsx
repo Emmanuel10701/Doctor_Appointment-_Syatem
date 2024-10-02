@@ -5,7 +5,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useParams } from 'next/navigation';
 import { doctorsData } from '../../components/data/page';
-import {useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import CircularProgress from '@mui/material/CircularProgress'; // Material-UI Spinner
 
@@ -17,6 +17,7 @@ interface User {
 interface Session {
   user?: User; // Making user optional
 }
+
 const AppointmentDetail: React.FC = () => {
   const { id } = useParams();
   const { data: session } = useSession(); // Get session data
@@ -28,6 +29,7 @@ const AppointmentDetail: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const router = useRouter(); // Use router for navigation
 
   useEffect(() => {
     if (id) {
@@ -52,7 +54,6 @@ const AppointmentDetail: React.FC = () => {
       alert('Please select both date and time.');
     }
   };
-  const route = useRouter()
 
   const confirmAppointment = async () => {
     if (!session?.user) return; // Safety check
@@ -81,9 +82,6 @@ const AppointmentDetail: React.FC = () => {
         throw new Error('Failed to book appointment');
       }
 
-
-
-
       console.log('Appointment booked successfully');
     } catch (error) {
       console.error('Error booking appointment:', error);
@@ -103,10 +101,6 @@ const AppointmentDetail: React.FC = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [modalOpen]);
-
-
-
-
 
   if (loading) {
     return (
@@ -189,47 +183,55 @@ const AppointmentDetail: React.FC = () => {
               <p>Appointment booked successfully for {doctor.name}!</p>
               <p>Date: {selectedDate?.toLocaleDateString()}</p>
               <p>Time: {selectedTime}</p>
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => router.push('/Appointment')}
+                  className="bg-transparent border border-blue-500 text-blue-500 py-2 px-6 rounded-full shadow hover:bg-blue-500 hover:text-white transition duration-200"
+                >
+                  View Appointments
+                </button>
+              </div>
             </div>
           )}
 
-       {/* Booking Confirmation Modal */}
-        {modalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div ref={modalRef} className="bg-white p-12 rounded-lg shadow-lg w-full max-w-2xl"> {/* Increased size */}
-              <h3 className="text-2xl font-bold text-indigo-600">Confirm Appointment</h3> {/* Enhanced color and size */}
-              <p className="mt-4 text-lg">Doctor: <span className="font-semibold text-blue-600">{doctor.name}</span></p> {/* Color change */}
-              <p className="mt-2 text-lg">Date: <span className="font-semibold text-blue-600">{selectedDate?.toLocaleDateString()}</span></p> {/* Color change */}
-              <p className="mt-2 text-lg">Time: <span className="font-semibold text-blue-600">{selectedTime}</span></p> {/* Color change */}
-              <p className="mt-2 text-lg">Appointment Fee: <span className='font-extrabold text-green-700'>${appointmentFee}</span></p> {/* Color remains */}
-              <div className="flex justify-between mt-6">
-                <button onClick={confirmAppointment} className="bg-green-500 text-white py-3 px-6 rounded-full shadow hover:bg-green-600 transition duration-200"> {/* Updated styles */}
-                  Confirm
-                </button>
-                <button onClick={() => setModalOpen(false)} className="bg-red-500 text-white py-3 px-6 rounded-full shadow hover:bg-red-600 transition duration-200"> {/* Updated styles */}
-                  Cancel
-                </button>
+          {/* Booking Confirmation Modal */}
+          {modalOpen && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <div ref={modalRef} className="bg-white p-12 rounded-lg shadow-lg w-full max-w-2xl">
+                <h3 className="text-2xl font-bold text-indigo-600">Confirm Appointment</h3>
+                <p className="mt-4 text-lg">Doctor: <span className="font-semibold text-blue-600">{doctor.name}</span></p>
+                <p className="mt-2 text-lg">Date: <span className="font-semibold text-blue-600">{selectedDate?.toLocaleDateString()}</span></p>
+                <p className="mt-2 text-lg">Time: <span className="font-semibold text-blue-600">{selectedTime}</span></p>
+                <p className="mt-2 text-lg">Appointment Fee: <span className='font-extrabold text-green-700'>${appointmentFee}</span></p>
+                <div className="flex justify-between mt-6">
+                  <button onClick={confirmAppointment} className="bg-green-500 text-white py-3 px-6 rounded-full shadow hover:bg-green-600 transition duration-200">
+                    Confirm
+                  </button>
+                  <button onClick={() => setModalOpen(false)} className="bg-red-500 text-white py-3 px-6 rounded-full shadow hover:bg-red-600 transition duration-200">
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Login Modal */}
-        {loginModalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-2xl"> {/* Increased size */}
-              <h3 className="text-lg font-semibold">Login Required</h3>
-              <p className="mt-2">Please log in to confirm your appointment.</p>
-              <div className="flex justify-center mt-4">
-                <button onClick={() => route.push("http://localhost:3000/login") } className="bg-transparent border border-blue-500 text-blue-500 py-3 px-6 rounded-full shadow hover:bg-blue-500 hover:text-white transition duration-200"> {/* Updated button styles */}
-                  Login
-                </button>
-                <button onClick={() => setLoginModalOpen(false)} className="bg-transparent border border-red-500 text-red-500 py-3 px-6 rounded-full shadow hover:bg-red-500 hover:text-white transition duration-200 ml-2"> {/* Updated button styles */}
-                  Cancel
-                </button>
+          {/* Login Modal */}
+          {loginModalOpen && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-2xl">
+                <h3 className="text-lg font-semibold">Login Required</h3>
+                <p className="mt-2">Please log in to confirm your appointment.</p>
+                <div className="flex justify-center mt-4">
+                  <button onClick={() => router.push("http://localhost:3000/login")} className="bg-transparent border border-blue-500 text-blue-500 py-3 px-6 rounded-full shadow hover:bg-blue-500 hover:text-white transition duration-200">
+                    Login
+                  </button>
+                  <button onClick={() => setLoginModalOpen(false)} className="bg-transparent border border-red-500 text-red-500 py-3 px-6 rounded-full shadow hover:bg-red-500 hover:text-white transition duration-200 ml-2">
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         </div>
       </div>

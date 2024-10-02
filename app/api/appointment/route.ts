@@ -9,6 +9,7 @@ interface AppointmentData {
   date: string; // Use string for ISO date format
   time: string;
   fee: number;
+  userId:string;
 }
 
 // POST request: Book a new appointment
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
         date: new Date(date), // Ensure the date is in the correct format
         time,
         fee,
+        
       },
     });
 
