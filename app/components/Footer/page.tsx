@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link'; // Import Link from next/link
+import Link from 'next/link';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
 import { FaPhone, FaMapMarkerAlt, FaEnvelope } from 'react-icons/fa';
 import { CircularProgress } from '@mui/material';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +19,7 @@ const Footer: React.FC = () => {
     setSuccess(false);
 
     try {
-      const response = await fetch('/api/subscribe', {
+      const response = await fetch('/api/subs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,10 +29,14 @@ const Footer: React.FC = () => {
 
       if (response.ok) {
         setSuccess(true);
+        toast.success('Subscription successful!');
+      } else if (response.status === 409) { // Assuming 409 indicates email already exists
+        toast.error('Email already exists. Please use a different email.');
       } else {
         throw new Error('Subscription failed');
       }
     } catch (error) {
+      toast.error('Subscription failed. Please try again later.');
       console.error(error);
     } finally {
       setLoading(false);
@@ -38,7 +44,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-slate-100   w-full h-[59%] text-slate-600 py-10">
+    <footer className="bg-slate-100 w-full h-[59%] text-slate-600 py-10">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
         
         {/* Image and Description */}
@@ -53,6 +59,7 @@ const Footer: React.FC = () => {
             Your trusted healthcare partner. Empowering you to make informed decisions. Together, we navigate your health journey. Committed to your well-being every step of the way. Dedicated to building a healthier future for you.
           </p>
         </div>
+        
         {/* Newsletter Subscription */}
         <div className="flex flex-col items-center md:mr-[10%] justify-center mb-6 md:mb-0 w-full md:w-1/3">
           <h2 className="text-lg font-bold bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent text-center">
@@ -69,13 +76,11 @@ const Footer: React.FC = () => {
             <button
               onClick={handleSubscribe}
               disabled={loading}
-              className={`bg-green-600 text-white font-bold py-2 px-4 rounded transition-opacity duration-200 ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`bg-green-600 text-white font-bold py-2 px-4 rounded transition-opacity duration-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {loading ? (
                 <div className="flex items-center ">
-                  <CircularProgress size={20}  className="mr-2 text-white font-bold" />
+                  <CircularProgress size={20} className="mr-2 text-white font-bold" />
                   Processing...
                 </div>
               ) : (
@@ -84,7 +89,7 @@ const Footer: React.FC = () => {
             </button>
           </div>
           {success && <p className="mt-2 text-green-400">Subscription successful!</p>}
-          <h1 className='text-center mt-10  font-bold text-slate-700'>Follow us:</h1>
+          <h1 className='text-center mt-10 font-bold text-slate-700'>Follow us:</h1>
 
           <div className="flex space-x-6 mt-4">
             <Link href="#" aria-label="Facebook">
@@ -101,8 +106,9 @@ const Footer: React.FC = () => {
             </Link>
           </div>
         </div>
+        
         {/* Contact Information */}
-        <div className="flex flex-col  items-start mt-6 space-y-5 md:mt-0 text-sm">
+        <div className="flex flex-col items-start mt-6 space-y-5 md:mt-0 text-sm">
           <h1 className='text-center mb-10 font-bold text-slate-500'>Contact us:</h1>
           <div className="flex items-center mb-2">
             <FaMapMarkerAlt size={24} className="mr-2 text-slate-500" />
@@ -122,8 +128,9 @@ const Footer: React.FC = () => {
       {/* Copyright */}
       <div className="mt-6 text-center text-sm">
         <hr className='w-full ' />
-        <p>© {new Date().getFullYear()} Your Company Name. All Rights Reserved.</p>
+        <p>© {new Date().getFullYear()} Healthcare. All Rights Reserved.</p>
       </div>
+      <ToastContainer />
     </footer>
   );
 };

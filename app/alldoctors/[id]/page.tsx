@@ -4,55 +4,91 @@ import Image from 'next/image';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useParams } from 'next/navigation';
-import { doctorsData } from '../../components/data/page'; // Adjust the path as needed
+import { doctorsData } from '../../components/data/page';
+import {useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react';
+import CircularProgress from '@mui/material/CircularProgress'; // Material-UI Spinner
 
+interface User {
+  email: string;
+  name?: string; // Add other properties as needed
+}
+
+interface Session {
+  user?: User; // Making user optional
+}
 const AppointmentDetail: React.FC = () => {
-  const { id } = useParams(); // Get the doctor id from the URL
+  const { id } = useParams();
+  const { data: session } = useSession(); // Get session data
   const [doctor, setDoctor] = useState<any>(null);
-  
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState('');
   const [appointmentConfirmed, setAppointmentConfirmed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (id) {
       const selectedDoctor = doctorsData.find((doc) => doc.id === Number(id));
       setDoctor(selectedDoctor);
-      setLoading(false); // Set loading to false after doctor is found
+      setLoading(false);
     }
   }, [id]);
 
-  const appointmentFee = 50; // Define appointment fee
+  const appointmentFee = 50;
   const times = ['6:00 AM', '8:00 AM', '10:00 AM', '1:00 PM', '3:00 PM', '5:00 PM'];
 
-  const relatedDoctors = [
-    { name: 'Dr. Johnson', specialty: 'Dentist 🦷', image: '/assets/assets_frontend/doc2.png' },
-    { name: 'Dr. Lee', specialty: 'Dentist 🦷', image: '/assets/assets_frontend/doc3.png' },
-    { name: 'Dr. Brown', specialty: 'Dentist 🦷', image: '/assets/assets_frontend/doc4.png' },
-    { name: 'Dr. Garcia', specialty: 'Dentist 🦷', image: '/assets/assets_frontend/doc5.png' },
-  ];
-
   const handleBookAppointment = () => {
+    if (!session?.user) {
+      setLoginModalOpen(true); // Open login modal if not logged in
+      return;
+    }
+    
     if (selectedDate && selectedTime) {
       setModalOpen(true);
     } else {
       alert('Please select both date and time.');
     }
   };
+  const route = useRouter()
 
-  const confirmAppointment = () => {
+  const confirmAppointment = async () => {
+    if (!session?.user) return; // Safety check
+
     setAppointmentConfirmed(true);
     setModalOpen(false);
-    console.log({
-      doctor: doctor?.name,
-      specialty: doctor?.specialty,
-      date: selectedDate,
-      time: selectedTime,
-      fee: appointmentFee,
-    });
+
+    // Push the appointment data to your API
+    try {
+      const response = await fetch('/api/appointment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patientName: session.user.name, // Include patient's name
+          doctorName: doctor?.name,
+          specialty: doctor?.specialty,
+          date: selectedDate?.toISOString(),
+          time: selectedTime,
+          fee: appointmentFee,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to book appointment');
+      }
+
+
+
+
+      console.log('Appointment booked successfully');
+    } catch (error) {
+      console.error('Error booking appointment:', error);
+      alert('Failed to book appointment.');
+    }
   };
 
   useEffect(() => {
@@ -68,25 +104,14 @@ const AppointmentDetail: React.FC = () => {
     };
   }, [modalOpen]);
 
+
+
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="loader"></div> {/* Add your loading spinner here */}
-        <style jsx>{`
-          .loader {
-            border: 8px solid #f3f3f3; /* Light grey */
-            border-top: 8px solid #3498db; /* Blue */
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-          }
-
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
+        <CircularProgress /> {/* Material-UI Spinner */}
       </div>
     ); // Loading spinner while fetching doctor data
   }
@@ -167,49 +192,45 @@ const AppointmentDetail: React.FC = () => {
             </div>
           )}
 
-          {modalOpen && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-              <div ref={modalRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-                <h3 className="text-lg font-semibold">Confirm Appointment</h3>
-                <p className="mt-2">Doctor: {doctor.name}</p>
-                <p>Date: {selectedDate?.toLocaleDateString()}</p>
-                <p>Time: {selectedTime}</p>
-                <p>Appointment Fee: <span className='font-extrabold text-green-700'>${appointmentFee}</span></p>
-                <div className="flex justify-between mt-4">
-                  <button onClick={confirmAppointment} className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-200">
-                    Confirm
-                  </button>
-                  <button onClick={() => setModalOpen(false)} className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition duration-200">
-                    Cancel
-                  </button>
-                </div>
+       {/* Booking Confirmation Modal */}
+        {modalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div ref={modalRef} className="bg-white p-12 rounded-lg shadow-lg w-full max-w-2xl"> {/* Increased size */}
+              <h3 className="text-2xl font-bold text-indigo-600">Confirm Appointment</h3> {/* Enhanced color and size */}
+              <p className="mt-4 text-lg">Doctor: <span className="font-semibold text-blue-600">{doctor.name}</span></p> {/* Color change */}
+              <p className="mt-2 text-lg">Date: <span className="font-semibold text-blue-600">{selectedDate?.toLocaleDateString()}</span></p> {/* Color change */}
+              <p className="mt-2 text-lg">Time: <span className="font-semibold text-blue-600">{selectedTime}</span></p> {/* Color change */}
+              <p className="mt-2 text-lg">Appointment Fee: <span className='font-extrabold text-green-700'>${appointmentFee}</span></p> {/* Color remains */}
+              <div className="flex justify-between mt-6">
+                <button onClick={confirmAppointment} className="bg-green-500 text-white py-3 px-6 rounded-full shadow hover:bg-green-600 transition duration-200"> {/* Updated styles */}
+                  Confirm
+                </button>
+                <button onClick={() => setModalOpen(false)} className="bg-red-500 text-white py-3 px-6 rounded-full shadow hover:bg-red-600 transition duration-200"> {/* Updated styles */}
+                  Cancel
+                </button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Related Doctors Section */}
-      </div>
-      <div className="mt-4 w-full mx-auto items-center">
-        <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent mb-5">
-          Related doctors
-        </h1>
-        <div className="flex flex-wrap gap-2 text-center justify-center items-center">
-          {relatedDoctors.map((relatedDoctor, index) => (
-            <div key={index} className="border rounded-lg overflow-hidden shadow-md w-1/7">
-              <Image
-                src={relatedDoctor.image}
-                alt={relatedDoctor.name}
-                width={80}
-                height={80}
-                className="object-cover w-[80%] h-30"
-              />
-              <div className="p-4">
-                <h2 className="mt-2 text-lg font-semibold">{relatedDoctor.name}</h2>
-                <p className="text-sm text-slate-500">{relatedDoctor.specialty}</p>
+        {/* Login Modal */}
+        {loginModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-2xl"> {/* Increased size */}
+              <h3 className="text-lg font-semibold">Login Required</h3>
+              <p className="mt-2">Please log in to confirm your appointment.</p>
+              <div className="flex justify-center mt-4">
+                <button onClick={() => route.push("http://localhost:3000/login") } className="bg-transparent border border-blue-500 text-blue-500 py-3 px-6 rounded-full shadow hover:bg-blue-500 hover:text-white transition duration-200"> {/* Updated button styles */}
+                  Login
+                </button>
+                <button onClick={() => setLoginModalOpen(false)} className="bg-transparent border border-red-500 text-red-500 py-3 px-6 rounded-full shadow hover:bg-red-500 hover:text-white transition duration-200 ml-2"> {/* Updated button styles */}
+                  Cancel
+                </button>
               </div>
             </div>
-          ))}
+          </div>
+        )}
+
         </div>
       </div>
     </>
