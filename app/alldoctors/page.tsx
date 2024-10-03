@@ -83,7 +83,7 @@ const DoctorsPage: React.FC = () => {
           {filteredDoctors.map(doctor => (
             <div 
               key={doctor.id} 
-              className="border rounded-lg overflow-hidden shadow-md transition duration-200 hover:outline-1 hover:shadow-lg"
+              className="border hover:bg-blue-400 cursor-pointer rounded-lg overflow-hidden shadow-md transition duration-200 hover:outline-1 hover:shadow-lg"
               onClick={() => handleDoctorClick(doctor.id)}
             >
               <Image

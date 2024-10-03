@@ -61,14 +61,11 @@ const Dashboard: React.FC = () => {
   };
 
   const completeAppointment = async (fee: number) => {
-    // API call to confirm appointment
     const appointmentId = appointments.find(app => app.fee === fee)?.id;
     if (appointmentId) {
       await fetch(`/api/appointments/${appointmentId}/confirm`, {
         method: 'POST',
       });
-
-      // Increase earnings
       setEarnings(prev => prev + fee);
     }
   };
@@ -90,9 +87,10 @@ const Dashboard: React.FC = () => {
 
       <div className="flex h-screen bg-slate-100">
         {/* Sidebar */}
-        <aside className={`fixed left-0 top-0 h-full mt-20 border bg-slate-200 shadow-lg transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:w-64 z-20`}>
+        <aside className={`fixed top-20 left-0 h-full w-64 border bg-slate-200 shadow-lg z-20 transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
           <nav className="flex flex-col gap-6 p-4">
-            <h1 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
+            <h1 className='absolute top-20 right-4 md:hidden'><FaBars onClick={() => setSidebarOpen(!sidebarOpen)} /></h1>
+            <h1 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mb-4">
               Doctor Dashboard
             </h1>
             <button onClick={() => handleTabChange('appointments')} className={`flex items-center p-2 text-gray-600 hover:bg-gray-200 rounded ${activeTab === 'appointments' ? 'font-bold text-indigo-600' : ''}`}>
@@ -113,27 +111,26 @@ const Dashboard: React.FC = () => {
           <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
             <FaBars className="text-2xl" />
           </button>
-          
 
           <div className="mb-6">
-          <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
-        Doctor's Dashboard       
-     </h1>              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 place-items-center gap-6 mb-6">
-                <div className="p-6 hover:shadow-lg bg-white rounded-lg shadow-md">
-                  <h3 className="text-md text-center text-slate-600 font-bold">💰 Earnings</h3>
-                  <p className="text-2xl font-bold text-center text-purple-700">${/* Earnings Amount */} 20,000</p>
-                </div>
-                <div className="p-6 bg-white hover:shadow-lg rounded-lg shadow-md">
-                  <h3 className="text-md text-center text-slate-600 font-bold">📅 Appointments</h3>
-                  <p className="text-2xl font-bold text-center text-blue-700">{appointments.length}</p>
-                </div>
-                <div className="p-6 bg-white hover:shadow-lg rounded-lg shadow-md">
-                  <h3 className="text-md text-center text-slate-600 font-bold">🧑‍🍼 Patients</h3>
-                  <p className="text-2xl text-center font-bold text-green-700">{appointments.length}</p>
-                </div>
+            <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
+              Doctor's Dashboard       
+            </h1>
+            <div className="flex flex-wrap gap-4 my-5">
+              <div className="p-6 hover:shadow-lg bg-white rounded-lg shadow-md">
+                <h3 className="text-md text-center text-slate-600 font-bold">💰 Earnings</h3>
+                <p className="text-2xl font-bold text-center text-purple-700">${earnings}</p>
+              </div>
+              <div className="p-6 bg-white hover:shadow-lg rounded-lg shadow-md">
+                <h3 className="text-md text-center text-slate-600 font-bold">📅 Appointments</h3>
+                <p className="text-2xl font-bold text-center text-blue-700">{appointments.length}</p>
+              </div>
+              <div className="p-6 bg-white hover:shadow-lg rounded-lg shadow-md">
+                <h3 className="text-md text-center text-slate-600 font-bold">🧑‍🍼 Patients</h3>
+                <p className="text-2xl text-center font-bold text-green-700">{appointments.length}</p>
               </div>
             </div>
-
+          </div>
 
           {loading ? (
             <div className="flex items-center mt-20 justify-center h-full">
@@ -141,77 +138,75 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <>
-            {activeTab === 'appointments' && (
-  <>
-    <h2 className="text-3xl font-bold mb-6 text-gray-800 shadow-lg shadow-gray-300">
-       Appointments
-    </h2>
-    <table className="min-w-full bg-white border border-gray-300 shadow-lg">
-      <thead>
-        <tr className="bg-gray-100 text-purple-700 font-semibold shadow-md shadow-gray-200">
-          <th className="py-3 px-4 border-b">Doctor</th>
-          <th className="py-3 px-4 border-b">Appointment Date</th>
-          <th className="py-3 px-4 border-b">Status</th>
-          <th className="py-3 px-4 border-b">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {appointments.map((appointment, index) => (
-          <tr
-            key={appointment.id}
-            className={index % 2 === 0 ? 'bg-purple-50' : 'bg-green-50'}
-          >
-            <td className="py-3 px-4 border-b text-gray-700 font-medium">
-              {appointment.doctor}
-            </td>
-            <td className="py-3 px-4 border-b text-gray-700 font-medium">
-              {appointment.date}
-            </td>
-            <td
-              className={`py-3 px-4 border-b font-semibold ${
-                appointment.status === 'Confirmed'
-                  ? 'text-green-600'
-                  : 'text-red-600'
-              }`}
-            >
-              {appointment.status}
-            </td>
-            <td className="py-3 px-4 border-b">
-              {appointment.status === 'Confirmed' ? (
+              {activeTab === 'appointments' && (
                 <>
-                  <button
-                    className="text-red-600 font-semibold hover:underline"
-                    onClick={() => handleCancelAppointment(appointment.id)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="text-green-600 font-semibold ml-4 hover:underline"
-                    onClick={() => completeAppointment(appointment.fee)}
-                  >
-                    Complete
-                  </button>
+                  <h2 className="text-3xl font-bold my-6 text-gray-800 shadow-lg shadow-gray-300">
+                    Appointments
+                  </h2>
+                  <table className="min-w-full bg-white border border-gray-300 shadow-lg">
+                    <thead>
+                      <tr className="bg-gray-100 text-purple-700 font-semibold shadow-md shadow-gray-200">
+                        <th className="py-3 px-4 border-b">Doctor</th>
+                        <th className="py-3 px-4 border-b">Appointment Date</th>
+                        <th className="py-3 px-4 border-b">Status</th>
+                        <th className="py-3 px-4 border-b">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {appointments.map((appointment, index) => (
+                        <tr
+                          key={appointment.id}
+                          className={index % 2 === 0 ? 'bg-purple-50' : 'bg-green-50'}
+                        >
+                          <td className="py-3 px-4 border-b text-gray-700 font-medium">
+                            {appointment.doctor}
+                          </td>
+                          <td className="py-3 px-4 border-b text-gray-700 font-medium">
+                            {appointment.date}
+                          </td>
+                          <td
+                            className={`py-3 px-4 border-b font-semibold ${
+                              appointment.status === 'Confirmed'
+                                ? 'text-green-600'
+                                : 'text-red-600'
+                            }`}
+                          >
+                            {appointment.status}
+                          </td>
+                          <td className="py-3 px-4 border-b">
+                            {appointment.status === 'Confirmed' ? (
+                              <>
+                                <button
+                                  className="text-red-600 font-semibold hover:underline"
+                                  onClick={() => handleCancelAppointment(appointment.id)}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  className="text-green-600 font-semibold ml-4 hover:underline"
+                                  onClick={() => completeAppointment(appointment.fee)}
+                                >
+                                  Complete
+                                </button>
+                              </>
+                            ) : (
+                              <span>{appointment.status}</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </>
-              ) : (
-                <span>{appointment.status}</span>
               )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </>
-)}
-
 
               {activeTab === 'profile' && (
                 <div>
-                <h1 className="text-2xl text-center font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-4 mb-4">
-                Profile           
-                </h1>                  {/* Profile update form goes here */}
-                  <div className=' w-full flex '>
-                  <DoctorProfile/>
-
+                  <h1 className="text-2xl text-center font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-4 mb-4">
+                    Profile           
+                  </h1>
+                  <div className='w-full flex '>
+                    <DoctorProfile/>
                   </div>
                 </div>
               )}

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
+import {useRouter} from "next/navigation"
 
 const HeroSection: React.FC = () => {
   const specialties = [
@@ -35,10 +36,14 @@ const HeroSection: React.FC = () => {
 
   const [filteredDoctors, setFilteredDoctors] = useState(doctors);
   const [showAll, setShowAll] = useState(false);
+  const route = useRouter()
 
   const handleShowMore = () => {
     setShowAll(!showAll);
   };
+  const handleclick = () => {
+    route.push("alldoctors")
+  }
 
   const displayedDoctors = showAll ? filteredDoctors : filteredDoctors.slice(0, 10);
 
@@ -65,7 +70,8 @@ const HeroSection: React.FC = () => {
               </p>
             </div>
             <div className="flex justify-center items-center">
-              <button className="bg-gradient-to-r from-blue-500 to-blue-700 text-white text-center font-bold py-3 px-4 rounded-full flex items-center w-1/2">
+              <button className="bg-gradient-to-r from-blue-500 to-blue-700 text-white text-center font-bold py-3 px-4 rounded-full flex items-center w-1/2"                    onClick ={handleclick}
+              >
                 Book Appointment <ArrowRight className="ml-2" />
               </button>
             </div>

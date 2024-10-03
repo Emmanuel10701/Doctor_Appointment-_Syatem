@@ -85,7 +85,7 @@ const DoctorProfile: React.FC = () => {
     : URL.createObjectURL(doctorDetails.image);
 
   return (
-    <div className="flex flex-col justify-center w-[80%] mx-auto mt-[5%] items-center h-screen">
+    <div className="flex flex-col justify-center w-full mx-auto mt-[5%] items-center h-screen">
       <ToastContainer />
       <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-6xl">
         <div className="flex flex-col items-center mb-6">
