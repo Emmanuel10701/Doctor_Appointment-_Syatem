@@ -1,185 +1,155 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import CircularProgress from '@mui/material/CircularProgress';
-import Button from '@mui/material/Button';
+import Image from 'next/image';
 
-interface DoctorDetails {
-  name: string;
-  email: string;
-  specialty: string;
-  experience: string;
-  fees: string;
-  education: string;
-  address1: string;
-  address2: string;
-  aboutMe: string;
-  image: string | File;
+interface DoctorProfileData {
+    name: string;
+    email: string;
+    specialty: string;
+    experience: string;
+    fees: string;
+    education: string;
+    address1: string;
+    address2: string;
+    aboutMe: string;
+    profileImage: File | null;
 }
 
-const randomDoctorDetails: DoctorDetails = {
-  name: 'Dr. John Doe',
-  email: 'dr.johndoe@example.com',
-  specialty: 'Dentist',
-  experience: '12 years',
-  fees: '150',
-  education: 'DDS, University of Dental Science',
-  address1: '456 Elm St',
-  address2: 'Suite 200',
-  aboutMe: 'Dedicated to providing the best dental care.',
-  image: '/assets/assets_frontend/doc7.png',
-};
-
 const DoctorProfile: React.FC = () => {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [doctorDetails, setDoctorDetails] = useState<DoctorDetails>(randomDoctorDetails);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setDoctorDetails((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      setDoctorDetails((prev) => ({ ...prev, image: files[0] }));
-    }
-  };
-
-  const handleEdit = () => setIsEditing(true);
-
-  const handleSave = async () => {
-    if (!doctorDetails.email.includes('@')) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-
-    const formData = new FormData();
-    Object.entries(doctorDetails).forEach(([key, value]) => {
-      if (value) {
-        formData.append(key, value as any);
-      }
+    const [formData, setFormData] = useState<DoctorProfileData>({
+        name: '',
+        email: '',
+        specialty: '',
+        experience: '',
+        fees: '',
+        education: '',
+        address1: '',
+        address2: '',
+        aboutMe: '',
+        profileImage: null,
     });
+    const [loading, setLoading] = useState(false);
+    const [isEditing, setIsEditing] = useState(true);
 
-    setIsSaving(true);
+    useEffect(() => {
+        const storedData = localStorage.getItem('doctorProfile');
+        if (storedData) {
+            setFormData(JSON.parse(storedData));
+        }
+    }, []);
 
-    try {
-      const response = await fetch('/api/doctor/update', {
-        method: 'POST',
-        body: formData,
-      });
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value, type } = e.target;
 
-      if (!response.ok) throw new Error('Failed to update profile');
-      toast.success('Profile updated successfully');
-    } catch (error: any) {
-      toast.error(`Error updating profile: ${error.message}`);
-    } finally {
-      setIsSaving(false);
-      setIsEditing(false);
-    }
-  };
+        if (type === 'file') {
+            const files = (e.target as HTMLInputElement).files;
+            setFormData({
+                ...formData,
+                [name]: files && files.length > 0 ? files[0] : null,
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: value,
+            });
+        }
+    };
 
-  const imageUrl = typeof doctorDetails.image === 'string' 
-    ? doctorDetails.image 
-    : URL.createObjectURL(doctorDetails.image);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
 
-  return (
-    <div className="flex flex-col justify-center w-full mx-auto mt-[5%] items-center h-screen">
-      <ToastContainer />
-      <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-6xl">
-        <div className="flex flex-col items-center mb-6">
-          <img src={imageUrl} alt="Doctor" className="h-32 w-32 rounded-full mb-4" />
-          <h3 className="text-xl font-bold mb-2">{doctorDetails.name}</h3>
+        try {
+            localStorage.setItem('doctorProfile', JSON.stringify(formData));
+            toast.success("Doctor profile saved successfully!");
+            setIsEditing(false);
+        } catch (error) {
+            toast.error("An error occurred. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditToggle = () => {
+        setIsEditing(!isEditing);
+    };
+
+    return (
+        <div className="flex items-center mt-[100%] md:mt-[30%] justify-center w-full h-screen bg-slate-100 p-4">
+            <div className=" w-full md:w-[90%] bg-white p-8 rounded-lg shadow-lg">
+                {/* Profile Image */}
+                <div className="flex justify-center mb-6">
+                    <Image
+                        src={formData.profileImage ? URL.createObjectURL(formData.profileImage) : '/images/default.png'}
+                        alt="Profile"
+                        width={96}
+                        height={96}
+                        className="rounded-full shadow-md border-2 border-indigo-500 object-cover"
+                    />
+                </div>
+                <h1 className="text-3xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                    {isEditing ? 'Edit Doctor Profile' : 'Doctor Profile'}
+                </h1>
+
+                <form onSubmit={handleSubmit} className='w-full md:w-[80%]'>
+                    {/* Form Fields */}
+                    {[
+                        { label: 'Name', name: 'name', type: 'text' },
+                        { label: 'Email', name: 'email', type: 'email' },
+                        { label: 'Specialty', name: 'specialty', type: 'text' },
+                        { label: 'Experience', name: 'experience', type: 'text' },
+                        { label: 'Fees', name: 'fees', type: 'text' },
+                        { label: 'Education', name: 'education', type: 'text' },
+                        { label: 'Address 1', name: 'address1', type: 'text' },
+                        { label: 'Address 2', name: 'address2', type: 'text' },
+                        { label: 'About Me', name: 'aboutMe', type: 'text' },
+                    ].map(({ label, name, type }) => (
+                        <div className="mb-4" key={name}>
+                            <label className="block text-lg font-semibold text-indigo-600 mb-1">{label}</label>
+                            <input
+                                type={type}
+                                name={name}
+                                value={formData[name as keyof DoctorProfileData] as string} // Ensure it is a string
+                                onChange={handleChange}
+                                required
+                                disabled={!isEditing}
+                                className="p-3 border border-gray-300 rounded-lg shadow-inner w-[80%] focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                            />
+                        </div>
+                    ))}
+                    <div className="mb-4">
+                        <label className="block text-lg font-semibold my-6 text-indigo-600 mb-1">Upload Profile Image</label>
+                        <input
+                            type="file"
+                            name="profileImage"
+                            accept="image/*"
+                            onChange={handleChange}
+                            disabled={!isEditing}
+                            className="border border-gray-300 rounded p-2 shadow-inner w-[80%]"
+                        />
+                    </div>
+                    {/* Submit and Edit Buttons */}
+                    <div className="flex justify-between mb-4">
+                        <button
+                            type="submit"
+                            className="w-full border border-indigo-600 text-indigo-600 py-2 rounded-full hover:bg-indigo-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-200"
+                        >
+                            {loading ? 'Loading...' : 'Save Profile'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleEditToggle}
+                            className={`w-full border border-${isEditing ? 'red' : 'green'}-600 text-${isEditing ? 'red' : 'green'}-600 py-2 rounded-full hover:bg-${isEditing ? 'red' : 'green'}-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-${isEditing ? 'red' : 'green'}-500 focus:ring-opacity-50 transition duration-200 ml-2`}
+                        >
+                            {isEditing ? 'Cancel Edit' : 'Edit Profile'}
+                        </button>
+                    </div>
+                </form>
+                <ToastContainer />
+            </div>
         </div>
-
-        {isEditing ? (
-          <div className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0">
-            <div className="flex-1 pr-2">
-              {['name', 'email', 'specialty', 'experience', 'fees'].map((key) => (
-                <div key={key}>
-                  <label className="block text-gray-700 font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
-                  <input
-                    type="text"
-                    name={key}
-                    value={doctorDetails[key as keyof DoctorDetails] as string}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="flex-1 pl-2">
-              {['education', 'address1', 'address2', 'aboutMe'].map((key) => (
-                <div key={key}>
-                  <label className="block text-gray-700 font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
-                  <input
-                    type="text"
-                    name={key}
-                    value={doctorDetails[key as keyof DoctorDetails] as string}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                  />
-                </div>
-              ))}
-              <div>
-                <label className="block text-gray-700 font-semibold">Profile Image:</label>
-                <label className="cursor-pointer">
-                  <img src={imageUrl} alt="Doctor" className="h-24 w-24 rounded-full mb-2" />
-                  <input type="file" onChange={handleFileChange} className="hidden" />
-                </label>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0">
-            <div className="flex-1 pr-2">
-              {['name', 'email', 'specialty', 'experience', 'fees'].map((key) => (
-                <div key={key}>
-                  <label className="block text-gray-700 font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
-                  <span className="text-gray-800 font-medium">{doctorDetails[key as keyof DoctorDetails]}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex-1 pl-2">
-              {['education', 'address1', 'address2', 'aboutMe'].map((key) => (
-                <div key={key}>
-                  <label className="block text-gray-700 font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
-                  <span className="text-gray-800 font-medium">{doctorDetails[key as keyof DoctorDetails]}</span>
-                </div>
-              ))}
-              <div>
-                <label className="block text-gray-700 font-semibold">Profile Image:</label>
-                <img src={imageUrl} alt="Doctor" className="h-24 w-24 rounded-full mb-2" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-center mt-6">
-          {isEditing ? (
-            <Button
-              onClick={handleSave}
-              variant="outlined"
-              className="flex items-center rounded-full border-transparent text-blue-500 hover:bg-blue-100 transition duration-300 mt-4 p-2"
-              disabled={isSaving}
-            >
-              {isSaving ? <CircularProgress size={24} className="mr-2" /> : null}
-              {isSaving ? 'Submitting...' : 'Save Profile'}
-            </Button>
-          ) : (
-            <Button
-              onClick={handleEdit}
-              variant="outlined"
-              className="flex items-center rounded-full border-transparent text-green-500 hover:bg-green-100 transition duration-300 mt-4 p-2"
-            >
-              Edit Profile
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default DoctorProfile;

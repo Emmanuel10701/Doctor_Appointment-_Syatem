@@ -116,20 +116,21 @@ const Dashboard: React.FC = () => {
             <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
               Doctor's Dashboard       
             </h1>
-            <div className="flex flex-wrap gap-4 my-5">
-              <div className="p-6 hover:shadow-lg bg-white rounded-lg shadow-md">
+            <div className="flex flex-wrap gap-4 my-5 justify-center">
+            <div className="w-full sm:w-1/3 lg:w-1/4 p-4 hover:shadow-lg bg-white rounded-lg shadow-md transform transition-transform duration-300 ease-in-out hover:scale-105">
                 <h3 className="text-md text-center text-slate-600 font-bold">💰 Earnings</h3>
                 <p className="text-2xl font-bold text-center text-purple-700">${earnings}</p>
-              </div>
-              <div className="p-6 bg-white hover:shadow-lg rounded-lg shadow-md">
+            </div>
+            <div className="w-full sm:w-1/3 lg:w-1/4 p-4 hover:shadow-lg bg-white rounded-lg shadow-md transform transition-transform duration-300 ease-in-out hover:scale-105">
                 <h3 className="text-md text-center text-slate-600 font-bold">📅 Appointments</h3>
                 <p className="text-2xl font-bold text-center text-blue-700">{appointments.length}</p>
-              </div>
-              <div className="p-6 bg-white hover:shadow-lg rounded-lg shadow-md">
+            </div>
+            <div className="w-full sm:w-1/3 lg:w-1/4 p-4 hover:shadow-lg bg-white rounded-lg shadow-md transform transition-transform duration-300 ease-in-out hover:scale-105">
                 <h3 className="text-md text-center text-slate-600 font-bold">🧑‍🍼 Patients</h3>
                 <p className="text-2xl text-center font-bold text-green-700">{appointments.length}</p>
-              </div>
             </div>
+             </div>
+
           </div>
 
           {loading ? (
