@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { FaUserMd, FaCalendarCheck, FaBars } from 'react-icons/fa';
 import { CircularProgress } from '@mui/material';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import DoctorProfile from '../components/doctorprofile/page';
 
 const appointments = [
@@ -11,12 +13,21 @@ const appointments = [
 ];
 
 const Dashboard: React.FC = () => {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  
   const [activeTab, setActiveTab] = useState<'appointments' | 'profile'>('appointments');
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
   const [earnings, setEarnings] = useState(0);
   const [confirmButtonDisabled, setConfirmButtonDisabled] = useState(false);
+
+  // Redirect to login if not authenticated
+  if (status === 'unauthenticated') {
+    router.push('/login');
+    return null;
+  }
 
   const handleTabChange = (tab: 'appointments' | 'profile') => {
     setLoading(true);
@@ -148,14 +159,16 @@ const Dashboard: React.FC = () => {
                           <td className={`py-3 px-4 border-b font-semibold ${appointment.status === 'Confirmed' ? 'text-green-600' : 'text-red-600'}`}>
                             {appointment.status}
                           </td>
-                          <td className="py-3 px-4 border-b">
-                            {appointment.status === 'Confirmed' ? (
-                              <>
-                                <button className="text-red-600 font-semibold hover:underline" onClick={() => handleCancelAppointment(appointment.id)}>Cancel</button>
-                                <button className="text-green-600 font-semibold ml-4 hover:underline" onClick={() => completeAppointment(appointment.fee)}>Complete</button>
-                              </>
-                            ) : (
-                              <span>{appointment.status}</span>
+                          <td className="py-3 px-4 border-b flex justify-around">
+                            {appointment.status === 'Confirmed' && (
+                              <button onClick={() => completeAppointment(appointment.fee)} className="text-sm text-green-600 font-bold hover:underline">
+                                Complete
+                              </button>
+                            )}
+                            {appointment.status === 'Pending' && (
+                              <button onClick={() => handleCancelAppointment(appointment.id)} className="text-sm text-red-600 font-bold hover:underline">
+                                Cancel
+                              </button>
                             )}
                           </td>
                         </tr>
@@ -166,33 +179,29 @@ const Dashboard: React.FC = () => {
               )}
 
               {activeTab === 'profile' && (
-                <div>
-                  <h1 className="text-2xl text-center font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-4 mb-4">
-                    Profile           
-                  </h1>
-                  <div className='w-full flex '>
-                    <DoctorProfile />
-                  </div>
-                </div>
+                <DoctorProfile />
               )}
             </>
           )}
         </main>
+      </div>
 
-        {/* Confirmation Modal */}
-        {confirmCancelId !== null && (
-          <div className="fixed inset-0 flex items-center justify-center z-30 bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-lg font-semibold">Confirm Cancellation</h2>
-              <p>Are you sure you want to cancel this appointment?</p>
-              <div className="mt-4 flex justify-end">
-                <button className={`bg-red-600 text-white px-4 py-2 rounded mr-2 ${confirmButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={confirmCancellation} disabled={confirmButtonDisabled}>Confirm</button>
-                <button className="bg-gray-300 px-4 py-2 rounded" onClick={closeModal}>Cancel</button>
-              </div>
+      {confirmCancelId !== null && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold mb-4">Confirm Cancellation</h2>
+            <p className="text-gray-700 mb-6">Are you sure you want to cancel this appointment?</p>
+            <div className="flex justify-end gap-4">
+              <button onClick={confirmCancellation} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700" disabled={confirmButtonDisabled}>
+                {confirmButtonDisabled ? 'Cancelling...' : 'Confirm'}
+              </button>
+              <button onClick={closeModal} className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">
+                Close
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 };

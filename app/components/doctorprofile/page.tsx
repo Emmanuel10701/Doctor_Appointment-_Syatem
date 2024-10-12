@@ -76,7 +76,7 @@ const DoctorProfile: React.FC = () => {
     };
 
     return (
-        <div className="flex items-center mt-[100%] md:mt-[30%] justify-center w-full h-screen bg-slate-100 p-4">
+        <div className="flex items-center overflow-y-hidden mt-[100%] md:mt-[30%] justify-center w-full h-screen bg-slate-100 p-4">
             <div className=" w-full md:w-[90%] bg-white p-8 rounded-lg shadow-lg">
                 {/* Profile Image */}
                 <div className="flex justify-center mb-6">

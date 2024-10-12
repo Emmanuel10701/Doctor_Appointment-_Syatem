@@ -1,6 +1,8 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react'; // Import useSession
+import { useRouter } from 'next/navigation'; // Import useRouter for redirection
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
@@ -19,6 +21,9 @@ interface PatientDetails {
 }
 
 const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
+  const { data: session, status } = useSession(); // Get the session
+  const router = useRouter();
+  
   const [isEditing, setIsEditing] = useState<boolean>(true);
   const [patientDetails, setPatientDetails] = useState<PatientDetails>({
     name: '',
@@ -35,6 +40,18 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const apiUrl = 'http://localhost:3000/api/profile';
+
+  // If the session is still loading, show a loading spinner
+  if (status === 'loading') {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  // Redirect unauthenticated users
+ 
 
   useEffect(() => {
     if (patientId) {
@@ -104,7 +121,7 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col justify-center items-center mt-20 h-screen">
+      <div className="flex flex-col overflow-y-hidden justify-center items-center mt-20 h-screen">
         <ToastContainer />
         <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-4xl flex flex-col items-center">
           <div className="flex-none mb-6">
@@ -210,12 +227,9 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
               </div>
             )}
             {isDataSubmitted && !isSubmitting && (
-              <button 
-                onClick={() => setIsEditing(true)} 
-                className="bg-transparent text-green-500 border border-green-500 px-4 py-2 rounded-full"
-              >
-                Edit
-              </button>
+              <div className="px-4 py-3 bg-green-500 text-white rounded-full">
+                Profile submitted successfully!
+              </div>
             )}
           </div>
         </div>
@@ -223,5 +237,4 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
     </>
   );
 };
-
 export default PatientProfile;

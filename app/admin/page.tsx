@@ -134,7 +134,7 @@ if (error) {
         </button>
       </div>
 
-      <div className="flex h-screen ml-0 bg-slate-100">
+      <div className="flex h-screen ml-0 overflow-hidden bg-slate-100">
         <aside className={`fixed left-0 top-0 h-full mt-20 border bg-slate-200 shadow-lg transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:w-64 z-20`}>
           <nav className="flex flex-col gap-6 p-4">
             <h1 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
@@ -170,21 +170,20 @@ if (error) {
             Welcome to Dashboard       
           </h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 place-items-center gap-6 mb-6">
-            <div className="p-6 hover:shadow-lg bg-white rounded-lg shadow-md">
-              <h3 className="text-md text-center text-slate-600 font-bold">📅 Appointments</h3>
-              <p className="text-2xl font-bold text-center text-purple-700">{appointments.length}</p>
-            </div>
-            <div className="p-6 bg-white hover:shadow-lg rounded-lg shadow-md">
-              <h3 className="text-md text-center text-slate-600 font-bold">👨‍⚕️ Total Doctors</h3>
-              <p className="text-2xl text-center font-bold text-blue-700">{doctors.length}</p>
-            </div>
-            <div className="p-6 bg-white hover:shadow-lg rounded-lg shadow-md">
-              <h3 className="text-md text-center text-slate-600 font-bold">🧑‍🍼 Total Patients</h3>
-              <p className="text-2xl text-center font-bold text-green-700">{patients.length}</p>
-            </div>
+          <div className="p-6 hover:shadow-lg bg-white rounded-lg shadow-md flex flex-col items-center justify-center w-full max-w-xs">
+            <h3 className="text-md text-center text-slate-600 font-bold">📅 Appointments</h3>
+            <p className="text-2xl font-bold text-center text-purple-700">{appointments.length}</p>
           </div>
-
-          {loading ? (
+          <div className="p-6 hover:shadow-lg bg-white rounded-lg shadow-md flex flex-col items-center justify-center w-full max-w-xs">
+            <h3 className="text-md text-center text-slate-600 font-bold">👨‍⚕️ Total Doctors</h3>
+            <p className="text-2xl text-center font-bold text-blue-700">{doctors.length}</p>
+          </div>
+          <div className="p-6 hover:shadow-lg bg-white rounded-lg shadow-md flex flex-col items-center justify-center w-full max-w-xs">
+            <h3 className="text-md text-center text-slate-600 font-bold">🧑‍🍼 Total Patients</h3>
+            <p className="text-2xl text-center font-bold text-green-700">{patients.length}</p>
+          </div>
+        </div>
+   {loading ? (
             <div className="flex items-center mt-20 justify-center h-full">
               <CircularProgress size={32} />
             </div>
@@ -195,68 +194,76 @@ if (error) {
                   <h2 className="text-2xl font-semibold mb-4">Appointments</h2>
                   <table className="min-w-full bg-white border border-gray-300">
                     <thead>
-                      <tr className="bg-gray-100">
-                        <th className="py-2 border-b text-slate-600 font-extrabold text-center">Doctor</th>
-                        <th className="py-2 border-b text-slate-600 font-extrabold text-center">Appointment Date</th>
-                        <th className="py-2 border-b text-slate-600 font-extrabold text-center">Status</th>
-                      </tr>
+                    <tr className="bg-gray-100">
+                      <th className="py-2 px-2 border-b text-slate-600 font-extrabold text-center text-xs sm:text-base">Doctor</th>
+                      <th className="py-2 px-2 border-b text-slate-600 font-extrabold text-center text-xs sm:text-base">Appointment Date</th>
+                      <th className="py-2 px-2 border-b text-slate-600 font-extrabold text-center text-xs sm:text-base">Status</th>
+                    </tr>
                     </thead>
                     <tbody>
-                      {appointments.map((appointment) => (
-                        <tr key={appointment.id}>
-                          <td className="py-1 text-slate-600 font-extrabold">
-                            <div className='flex gap-3 bg-white shadow-lg'>
-                              <Image src={appointment.image} alt="Doctor Image" width={76} height={50} className='w-20 h-20 rounded-full' />
-                              <div className='flex flex-col'>
-                                <span>{appointment.doctor}</span>
-                                <span className="text-green-400">{appointment.specialty}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="text-blue-700 text-center">{appointment.date}</td>
-                          <td className="py-2 text-center text-orange-700">{appointment.status}</td>
-                        </tr>
-                      ))}
+                    {appointments.map((appointment) => (
+                  <tr key={appointment.id}>
+                    <td className="py-2 px-2 text-slate-600 font-extrabold">
+                      <div className="flex gap-3 bg-white shadow-lg p-2 rounded-lg items-center">
+                        <Image 
+                          src={appointment.image} 
+                          alt="Doctor Image" 
+                          width={76} 
+                          height={50} 
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover" 
+                        />
+                        <div className="flex flex-col text-sm sm:text-base">
+                          <span className="font-semibold text-gray-800">{appointment.doctor}</span>
+                          <span className="text-green-500">{appointment.specialty}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-2 text-blue-700 text-center text-xs sm:text-base">{appointment.date}</td>
+                    <td className="py-2 text-center text-orange-700 text-xs sm:text-base">{appointment.status}</td>
+                  </tr>
+                  ))}
+
                     </tbody>
                   </table>
                 </>
               )}
 
-              {activeTab === 'patients' && (
-                <>
-                  <h2 className="text-2xl font-semibold mb-4">Patients</h2>
-                  <table className="min-w-full bg-white border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="py-2 border-b">Image</th>
-                        <th className="py-2 border-b">Name</th>
-                        <th className="py-2 border-b">Age</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {patients.map((patient) => (
-                        <tr key={patient.id}>
-                          <td className="py-1 text-slate-600 shadow-lg bg-white font-extrabold">
-                            <div className='flex gap-3 items-center'>
-                              <Image 
-                                src={patient.image} 
-                                alt="Patient Image" 
-                                width={40} 
-                                height={40} 
-                                className='w-20 h-20 rounded-full'
-                              />
-                            </div>
-                          </td>
-                          <td>
-                            <span className='text-lg text-center font-bold'>{patient.name}</span>
-                          </td>
-                          <td className="py-2 text-center text-blue-700">{patient.age}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </>
-              )}
+{activeTab === 'patients' && (
+  <>
+    <h2 className="text-xl sm:text-2xl font-semibold mb-4">Patients</h2>
+    <table className="min-w-full bg-white border border-gray-300">
+      <thead>
+        <tr className="bg-gray-100">
+          <th className="py-2 border-b text-xs sm:text-base">Image</th>
+          <th className="py-2 border-b text-xs sm:text-base">Name</th>
+          <th className="py-2 border-b text-xs sm:text-base">Age</th>
+        </tr>
+      </thead>
+      <tbody>
+        {patients.map((patient) => (
+          <tr key={patient.id}>
+            <td className="py-1 text-slate-600 shadow-lg bg-white font-extrabold">
+              <div className="flex gap-3 items-center">
+                <Image 
+                  src={patient.image} 
+                  alt="Patient Image" 
+                  width={40} 
+                  height={40} 
+                  className="w-16 h-16 rounded-full"
+                />
+              </div>
+            </td>
+            <td>
+              <span className="text-sm sm:text-lg text-center font-bold">{patient.name}</span>
+            </td>
+            <td className="py-2 text-center text-blue-700 text-sm sm:text-base">{patient.age}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </>
+)}
+
 
               {activeTab === 'doctors' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -284,29 +291,35 @@ if (error) {
 
               {activeTab === 'addDoctor' && <AddDoctorForm />}
               
-              {activeTab === 'subscribers' && (
-            <div>
+                        {activeTab === 'subscribers' && (
+            <div className='overflow-hidden'>
               <h1 className="text-xl font-bold mb-4">Subscribers List</h1>
-              <button onClick={() => setIsModalOpen(true)} className="bg-blue-500 text-white p-2 rounded mb-4">Mail All Subscribers</button>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-gradient-to-r from-blue-500 to-green-500 text-transparent bg-clip-text font-bold py-2 px-4 rounded-full mb-4"
+              >
+                Mail All Subscribers
+              </button>
               <MailModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSend={handleSendEmail} />
               <table className="min-w-full bg-white border border-gray-300">
                 <thead>
                   <tr>
-                    <th className="py-2 px-4 border-b">Email</th>
-                    <th className="py-2 px-4 border-b">Date Added</th>
+                    <th className="py-2 px-4 border-b text-slate-600 font-extrabold text-center">Email</th>
+                    <th className="py-2 px-4 border-b text-slate-600 font-extrabold text-center">Date Added</th>
                   </tr>
                 </thead>
                 <tbody>
                   {subscribers.map((subscriber) => (
                     <tr key={subscriber.email}>
-                      <td className="py-2 px-4 border-b">{subscriber.email}</td>
-                      <td className="py-2 px-4 border-b">{new Date(subscriber.createdAt).toLocaleDateString()}</td>
+                      <td className="py-2 px-4 border-b text-slate-500">{subscriber.email}</td>
+                      <td className="py-2 px-4 border-b text-slate-500">{new Date(subscriber.createdAt).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
+
             </>
           )}
         </main>

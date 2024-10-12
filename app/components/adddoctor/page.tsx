@@ -1,9 +1,13 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import Image from "next/image";
 import { useSession } from 'next-auth/react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { CircularProgress, Button } from '@mui/material';
+import { CircularProgress } from '@mui/material';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
@@ -21,6 +25,17 @@ interface Session {
   user?: SessionUser;
 }
 
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string; 
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+}
+
 const specialties = {
   'Dentist': '🦷',
   'General Physician': '👨‍⚕️',
@@ -31,17 +46,13 @@ const specialties = {
   'Gynecologist': '👩‍⚕️',
 };
 
-const educationLevels = [
-  'Associate',
-  'Bachelor',
-  'Master',
-  'PhD'
-];
-
+const educationLevels = ['Associate', 'Bachelor', 'Master', 'PhD'];
 const feesOptions = Array.from({ length: 10 }, (_, i) => (50 + i * 50).toString());
 
 const AddDoctorForm: React.FC = () => {
   const { data: session } = useSession() as { data: Session | null };
+  const router = useRouter();
+  
   const [doctorName, setDoctorName] = useState('');
   const [doctorEmail, setDoctorEmail] = useState('');
   const [specialty, setSpecialty] = useState('');
@@ -54,14 +65,20 @@ const AddDoctorForm: React.FC = () => {
   const [image, setImage] = useState<File | null>(null);
   const [userOptions, setUserOptions] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
-
+  
   useEffect(() => {
     const fetchUsers = async () => {
-      const response = await fetch('/api/register');
-      const users = await response.json();
-      setUserOptions(users);
+      try {
+        const response = await fetch('/api/register'); // Adjust API endpoint as needed
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        const users = await response.json();
+        setUserOptions(users);
+      } catch (error: any) {
+        toast.error(`Error fetching users: ${error.message}`);
+      }
     };
-
     fetchUsers();
   }, []);
 
@@ -70,6 +87,8 @@ const AddDoctorForm: React.FC = () => {
     const selectedUser = userOptions.find(user => user.email === selectedEmail);
     if (selectedUser) {
       setDoctorName(selectedUser.name);
+    } else {
+      setDoctorName('');
     }
     setDoctorEmail(selectedEmail);
   };
@@ -82,6 +101,12 @@ const AddDoctorForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!session || !session.user?.id) {
+      toast.warn('You must be logged in to submit the form and admin only can create the doctors.');
+      return;
+    }
+
     setLoading(true);
 
     const formData = new FormData();
@@ -94,47 +119,36 @@ const AddDoctorForm: React.FC = () => {
     formData.append('address1', address1);
     formData.append('address2', address2);
     formData.append('aboutMe', aboutMe);
-    
-    const userId = session?.user?.id;
-    if (userId) {
-      formData.append('userId', userId);
-    } else {
-      console.error('User ID is not available');
-      setLoading(false);
-      return;
-    }
-    
+    formData.append('userId', session.user.id);
+
     if (image) {
       formData.append('image', image);
     }
-  
+
     try {
-      const response = await fetch('/api/doctors', {
-        method: 'POST',
-        body: formData,
+      const response = await axios.post('/api/doctors', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-  
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.statusText}`);
+
+      if (response.status === 201) {
+        toast.success('Doctor added successfully!');
+        // Reset form fields
+        setDoctorName('');
+        setDoctorEmail('');
+        setSpecialty('');
+        setExperience('');
+        setFees('');
+        setEducation('');
+        setAddress1('');
+        setAddress2('');
+        setAboutMe('');
+        setImage(null);
+      } else {
+        throw new Error('Failed to add doctor');
       }
-      
-      const result = await response.json();
-      console.log('Success:', result);
-      toast.success('Doctor added successfully!');
-      
-      // Reset the form fields
-      setDoctorName('');
-      setDoctorEmail('');
-      setSpecialty('');
-      setExperience('');
-      setFees('');
-      setEducation('');
-      setAddress1('');
-      setAddress2('');
-      setAboutMe('');
-      setImage(null);
-  
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
       toast.error('Error adding doctor. Please try again.');
     } finally {
@@ -143,37 +157,26 @@ const AddDoctorForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen overflow-hidden flex flex-col">
-      <form onSubmit={handleSubmit} className="flex flex-col flex-1 p-6 space-y-4">
+    <div className="min-h-screen flex flex-col overflow-hidden overflow-y-hidden">
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1 p-6 space-y-4 max-w-4xl mx-auto">
+        {/* Image Upload */}
         <div className="flex justify-center mb-4">
           <label className="flex flex-col items-center">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
+            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
             <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
               {image ? (
                 <img src={URL.createObjectURL(image)} alt="Doctor" className="w-full h-full rounded-full object-cover" />
               ) : (
-                <Image
-                  src="/images/default.png"
-                  alt="default"
-                  width={100}
-                  height={100}
-                  className="object-cover bg-slate-300 rounded-full w-full"
-                />
+                <Image src="/images/default.png" alt="default" width={100} height={100} className="object-cover bg-slate-300 rounded-full w-full h-full" />
               )}
             </div>
-            <span className="text-slate-500 text-xl text-semibold">
-              Upload Image
-            </span>
+            <span className="text-slate-500 text-sm mt-2">Upload Image</span>
           </label>
         </div>
 
-        <div className="flex space-x-6">
-          <div className="flex flex-col flex-1">
+        {/* Doctor Email and Name */}
+        <div className="flex flex-col sm:flex-row sm:space-x-6">
+          <div className="flex flex-col flex-1 mb-4 sm:mb-0">
             <label className="font-semibold mb-1">Doctor Email</label>
             <select
               value={doctorEmail}
@@ -193,30 +196,30 @@ const AddDoctorForm: React.FC = () => {
               type="text"
               value={doctorName}
               readOnly
-              className="p-2 border rounded focus:outline-none focus:ring focus:ring-blue-500"
+              className="p-2 border rounded bg-gray-100 cursor-not-allowed"
             />
           </div>
         </div>
 
-        <div className="flex space-x-6">
-          <div className="flex flex-col flex-1">
-            <label className="font-semibold mb-1">Specialty</label>
-            <select
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-              required
-              className="p-2 border rounded focus:outline-none focus:ring focus:ring-blue-500"
-            >
-              <option value="" disabled>Select Specialty</option>
-              {Object.entries(specialties).map(([key, value]) => (
-                <option key={key} value={key}>{value} {key}</option>
-              ))}
-            </select>
-          </div>
+        {/* Specialty */}
+        <div className="flex flex-col">
+          <label className="font-semibold mb-1">Specialty</label>
+          <select
+            value={specialty}
+            onChange={(e) => setSpecialty(e.target.value)}
+            required
+            className="p-2 border rounded focus:outline-none focus:ring focus:ring-blue-500"
+          >
+            <option value="" disabled>Select Specialty</option>
+            {Object.entries(specialties).map(([key, value]) => (
+              <option key={key} value={key}>{value} {key}</option>
+            ))}
+          </select>
         </div>
 
-        <div className="flex space-x-6">
-          <div className="flex flex-col flex-1">
+        {/* Experience and Fees */}
+        <div className="flex flex-col sm:flex-row sm:space-x-6">
+          <div className="flex flex-col flex-1 mb-4 sm:mb-0">
             <label className="font-semibold mb-1">Experience</label>
             <input
               type="text"
@@ -242,8 +245,9 @@ const AddDoctorForm: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex space-x-6">
-          <div className="flex flex-col flex-1">
+        {/* Education and Address1 */}
+        <div className="flex flex-col sm:flex-row sm:space-x-6">
+          <div className="flex flex-col flex-1 mb-4 sm:mb-0">
             <label className="font-semibold mb-1">Education</label>
             <select
               value={education}
@@ -269,6 +273,7 @@ const AddDoctorForm: React.FC = () => {
           </div>
         </div>
 
+        {/* Address2 */}
         <div className="flex flex-col">
           <label className="font-semibold mb-1">Address 2</label>
           <input
@@ -279,6 +284,7 @@ const AddDoctorForm: React.FC = () => {
           />
         </div>
 
+        {/* About Me */}
         <div className="flex flex-col">
           <label className="font-semibold mb-1">About Me</label>
           <textarea
@@ -286,21 +292,52 @@ const AddDoctorForm: React.FC = () => {
             onChange={(e) => setAboutMe(e.target.value)}
             required
             className="p-2 border rounded focus:outline-none focus:ring focus:ring-blue-500"
+            rows={4}
           />
         </div>
 
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          className="mt-4 w-32 self-center"
-          disabled={loading}
-        >
-          {loading ? <CircularProgress size={24} color="inherit" /> : 'Submit'}
-        </Button>
+        {/* Submit Button */}
+        <div className="flex justify-center">
+          <button
+            type="submit"
+            className={`mt-4 w-32 py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md 
+                      hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 
+                      flex items-center justify-center space-x-2 ${loading ? 'cursor-not-allowed opacity-50' : ''}`}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  ></path>
+                </svg>
+                <span>Processing...</span>
+              </>
+            ) : (
+              'Submit'
+            )}
+          </button>
+        </div>
       </form>
 
       <ToastContainer />
+
       <footer className="mt-auto p-4 bg-gray-800 text-white text-center">
         © 2024 Your Company. All rights reserved.
       </footer>
