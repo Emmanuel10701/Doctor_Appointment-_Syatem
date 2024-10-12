@@ -6,15 +6,18 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, password, role } = body;
+    const { name, email, password } = body;
 
     // Check for missing fields
-    if (!name || !email || !password || !role) {
+    if (!name || !email || !password) {
       return new NextResponse(
         JSON.stringify({ message: 'Missing Fields' }),
         { status: 400 }
       );
     }
+
+    // Set default role
+    const userRole = 'USER'; // Default role is 'USER'
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -37,7 +40,7 @@ export async function POST(request: Request) {
         name,
         email,
         hashedPassword,
-        role, // Include role in user creation
+        role: userRole, // Use the default role
       },
       select: {
         id: true,

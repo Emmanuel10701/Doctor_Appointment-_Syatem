@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { FaUserMd, FaCalendarCheck, FaBars } from 'react-icons/fa';
 import { CircularProgress } from '@mui/material';
-import DoctorProfile from '../components/doctorprofile/page'; // Adjust the path if necessary
+import DoctorProfile from '../components/doctorprofile/page';
 
 const appointments = [
   { id: 1, doctor: 'Dr. Smith', date: '2024-09-30', status: 'Confirmed', fee: 100, patientEmail: 'patient1@example.com' },
@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
       setActiveTab(tab);
       setLoading(false);
       setSidebarOpen(false);
-    }, 1000); // Simulate a loading delay
+    }, 1000);
   };
 
   const handleCancelAppointment = (id: number) => {
@@ -38,18 +38,12 @@ const Dashboard: React.FC = () => {
     try {
       const appointment = appointments.find(app => app.id === confirmCancelId);
       if (appointment) {
-        // API call to cancel appointment
-        await fetch(`/api/appointments/${confirmCancelId}`, {
-          method: 'DELETE',
-        });
-
-        // Send email to the patient
+        await fetch(`/api/appointments/${confirmCancelId}`, { method: 'DELETE' });
         await fetch('/api/sendEmail', {
           method: 'POST',
           body: JSON.stringify({ email: appointment.patientEmail, message: 'Your appointment has been canceled.' }),
           headers: { 'Content-Type': 'application/json' },
         });
-        
         console.log('Cancelled appointment:', confirmCancelId);
         setConfirmCancelId(null);
       }
@@ -63,9 +57,7 @@ const Dashboard: React.FC = () => {
   const completeAppointment = async (fee: number) => {
     const appointmentId = appointments.find(app => app.fee === fee)?.id;
     if (appointmentId) {
-      await fetch(`/api/appointments/${appointmentId}/confirm`, {
-        method: 'POST',
-      });
+      await fetch(`/api/appointments/${appointmentId}/confirm`, { method: 'POST' });
       setEarnings(prev => prev + fee);
     }
   };
@@ -82,14 +74,15 @@ const Dashboard: React.FC = () => {
             <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
             <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md">Doctor</span>
           </div>
+          <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <FaBars className="text-2xl" />
+          </button>
         </div>
       </div>
 
       <div className="flex h-screen bg-slate-100">
-        {/* Sidebar */}
         <aside className={`fixed top-20 left-0 h-full w-64 border bg-slate-200 shadow-lg z-20 transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
           <nav className="flex flex-col gap-6 p-4">
-            <h1 className='absolute top-20 right-4 md:hidden'><FaBars onClick={() => setSidebarOpen(!sidebarOpen)} /></h1>
             <h1 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mb-4">
               Doctor Dashboard
             </h1>
@@ -102,35 +95,29 @@ const Dashboard: React.FC = () => {
           </nav>
         </aside>
 
-        {/* Overlay for mobile */}
         {sidebarOpen && (
           <div className="fixed inset-0 bg-black opacity-50 z-10" onClick={() => setSidebarOpen(false)}></div>
         )}
 
         <main className="flex-1 md:ml-[20%] ml-1 p-6 overflow-y-auto">
-          <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
-            <FaBars className="text-2xl" />
-          </button>
-
           <div className="mb-6">
             <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
               Doctor's Dashboard       
             </h1>
             <div className="flex flex-wrap gap-4 my-5 justify-center">
-            <div className="w-full sm:w-1/3 lg:w-1/4 p-4 hover:shadow-lg bg-white rounded-lg shadow-md transform transition-transform duration-300 ease-in-out hover:scale-105">
+              <div className="w-full sm:w-1/3 lg:w-1/4 p-4 hover:shadow-lg bg-white rounded-lg shadow-md transform transition-transform duration-300 ease-in-out hover:scale-105">
                 <h3 className="text-md text-center text-slate-600 font-bold">💰 Earnings</h3>
                 <p className="text-2xl font-bold text-center text-purple-700">${earnings}</p>
-            </div>
-            <div className="w-full sm:w-1/3 lg:w-1/4 p-4 hover:shadow-lg bg-white rounded-lg shadow-md transform transition-transform duration-300 ease-in-out hover:scale-105">
+              </div>
+              <div className="w-full sm:w-1/3 lg:w-1/4 p-4 hover:shadow-lg bg-white rounded-lg shadow-md transform transition-transform duration-300 ease-in-out hover:scale-105">
                 <h3 className="text-md text-center text-slate-600 font-bold">📅 Appointments</h3>
                 <p className="text-2xl font-bold text-center text-blue-700">{appointments.length}</p>
-            </div>
-            <div className="w-full sm:w-1/3 lg:w-1/4 p-4 hover:shadow-lg bg-white rounded-lg shadow-md transform transition-transform duration-300 ease-in-out hover:scale-105">
+              </div>
+              <div className="w-full sm:w-1/3 lg:w-1/4 p-4 hover:shadow-lg bg-white rounded-lg shadow-md transform transition-transform duration-300 ease-in-out hover:scale-105">
                 <h3 className="text-md text-center text-slate-600 font-bold">🧑‍🍼 Patients</h3>
                 <p className="text-2xl text-center font-bold text-green-700">{appointments.length}</p>
+              </div>
             </div>
-             </div>
-
           </div>
 
           {loading ? (
@@ -155,40 +142,17 @@ const Dashboard: React.FC = () => {
                     </thead>
                     <tbody>
                       {appointments.map((appointment, index) => (
-                        <tr
-                          key={appointment.id}
-                          className={index % 2 === 0 ? 'bg-purple-50' : 'bg-green-50'}
-                        >
-                          <td className="py-3 px-4 border-b text-gray-700 font-medium">
-                            {appointment.doctor}
-                          </td>
-                          <td className="py-3 px-4 border-b text-gray-700 font-medium">
-                            {appointment.date}
-                          </td>
-                          <td
-                            className={`py-3 px-4 border-b font-semibold ${
-                              appointment.status === 'Confirmed'
-                                ? 'text-green-600'
-                                : 'text-red-600'
-                            }`}
-                          >
+                        <tr key={appointment.id} className={index % 2 === 0 ? 'bg-purple-50' : 'bg-green-50'}>
+                          <td className="py-3 px-4 border-b text-gray-700 font-medium">{appointment.doctor}</td>
+                          <td className="py-3 px-4 border-b text-gray-700 font-medium">{appointment.date}</td>
+                          <td className={`py-3 px-4 border-b font-semibold ${appointment.status === 'Confirmed' ? 'text-green-600' : 'text-red-600'}`}>
                             {appointment.status}
                           </td>
                           <td className="py-3 px-4 border-b">
                             {appointment.status === 'Confirmed' ? (
                               <>
-                                <button
-                                  className="text-red-600 font-semibold hover:underline"
-                                  onClick={() => handleCancelAppointment(appointment.id)}
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  className="text-green-600 font-semibold ml-4 hover:underline"
-                                  onClick={() => completeAppointment(appointment.fee)}
-                                >
-                                  Complete
-                                </button>
+                                <button className="text-red-600 font-semibold hover:underline" onClick={() => handleCancelAppointment(appointment.id)}>Cancel</button>
+                                <button className="text-green-600 font-semibold ml-4 hover:underline" onClick={() => completeAppointment(appointment.fee)}>Complete</button>
                               </>
                             ) : (
                               <span>{appointment.status}</span>
@@ -207,7 +171,7 @@ const Dashboard: React.FC = () => {
                     Profile           
                   </h1>
                   <div className='w-full flex '>
-                    <DoctorProfile/>
+                    <DoctorProfile />
                   </div>
                 </div>
               )}
@@ -221,7 +185,6 @@ const Dashboard: React.FC = () => {
             <div className="bg-white p-6 rounded-lg shadow-lg">
               <h2 className="text-lg font-semibold">Confirm Cancellation</h2>
               <p>Are you sure you want to cancel this appointment?</p>
-              <input type="text" />
               <div className="mt-4 flex justify-end">
                 <button className={`bg-red-600 text-white px-4 py-2 rounded mr-2 ${confirmButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={confirmCancellation} disabled={confirmButtonDisabled}>Confirm</button>
                 <button className="bg-gray-300 px-4 py-2 rounded" onClick={closeModal}>Cancel</button>

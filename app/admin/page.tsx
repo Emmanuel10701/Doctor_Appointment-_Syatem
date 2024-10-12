@@ -123,7 +123,7 @@ if (error) {
         <div className="container mx-auto flex justify-between items-center px-4 md:px-8">
           <div className="w-44 cursor-pointer flex items-center">
             <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
-            <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md">Admin</span>
+            <span className="ml-3 bg-white rounded-full text-blue-600 px-4 py-1 shadow-md md:hidden"  onClick={() => setSidebarOpen(!sidebarOpen)} >Menu</span>
           </div>
         </div>
         <button 
@@ -163,9 +163,9 @@ if (error) {
         )}
 
         <main className="flex-1 md:ml-[20%] ml-1 p-6 overflow-y-auto">
-          <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
-            <FaBars className="text-2xl" />
-          </button>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden ml-10 text-black">
+          <FaBars />
+        </button>
           <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 mt-20 mb-4">
             Welcome to Dashboard       
           </h1>

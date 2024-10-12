@@ -24,7 +24,7 @@ const RegisterPage: React.FC = () => {
 
     try {
       const response = await axios.post('/api/register', {
-        username,
+        name: username,  // Ensure the field matches the backend
         email,
         password,
       });
@@ -38,14 +38,8 @@ const RegisterPage: React.FC = () => {
     } catch (error: any) {
       if (error.response) {
         const result = error.response.data;
-        if (result.errors) {
-          Object.keys(result.errors).forEach((key) => {
-            toast.error(result.errors[key]);
-          });
-        } else {
-          toast.error(result.message || 'An error occurred. Please try again.');
-          console.error(error);
-        }
+        toast.error(result.message || 'An error occurred. Please try again.');
+        console.error(error);
       } else {
         toast.error('Registration failed. Please try again.');
         console.error(error);
@@ -70,9 +64,6 @@ const RegisterPage: React.FC = () => {
           <div className="w-full max-w-xl p-12 bg-white shadow-lg rounded-lg mb-8">
             <h2 className="text-4xl font-extrabold text-center mb-6 text-slate-600">🔏 Register</h2>
             <div className="flex flex-col items-center mb-6">
-              <div className="w-44 cursor-pointer flex items-center">
-                <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
-              </div>
               <h2 className="text-2xl font-bold text-center mt-4">Welcome to the Appointment System</h2>
               <p className="text-center text-gray-600 mt-2">Please create an account to manage your appointments.</p>
             </div>
@@ -83,7 +74,7 @@ const RegisterPage: React.FC = () => {
                   id="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-bold" // Increased boldness
+                  className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-bold"
                   placeholder="Username"
                   required
                 />
@@ -95,7 +86,7 @@ const RegisterPage: React.FC = () => {
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-bold" // Increased boldness
+                  className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-bold"
                   placeholder="Email Address"
                   required
                 />
@@ -107,7 +98,7 @@ const RegisterPage: React.FC = () => {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-bold" // Increased boldness
+                  className="w-full p-4 border border-gray-300 rounded-lg pl-12 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-bold"
                   placeholder="Password"
                   required
                 />
