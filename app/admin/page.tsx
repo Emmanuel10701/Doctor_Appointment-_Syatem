@@ -296,7 +296,7 @@ if (error) {
               <h1 className="text-xl font-bold mb-4">Subscribers List</h1>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-gradient-to-r from-blue-500 to-green-500 text-transparent bg-clip-text font-bold py-2 px-4 rounded-full mb-4"
+                className="bg-gradient-to-r from-blue-500 to-green-500 text-transparent text-white font-bold py-2 px-4 rounded-full mb-4"
               >
                 Mail All Subscribers
               </button>

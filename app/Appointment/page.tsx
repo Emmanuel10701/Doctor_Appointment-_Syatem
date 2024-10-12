@@ -1,41 +1,41 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { useSession } from 'next-auth/react';
-import { CircularProgress } from '@mui/material';
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { CircularProgress } from "@mui/material";
+import { doctorsData } from '../components/data/page'; // Import your local doctor data
 
 const AppointmentDetail: React.FC = () => {
   const { data: session } = useSession() as { data: { user: { id: string } } | null };
-  const [appointment, setAppointment] = useState<{ id: number; date: string; time: string; fee: number } | null>(null);
+  const [appointment, setAppointment] = useState<{ id: number; date: string; time: string; fee: number; doctorId: number } | null>(null);
+  const [doctor, setDoctor] = useState<{ name: string; specialty: string; degree: string; description: string; image: string } | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid'>('pending');
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
-  const doctor = {
-    name: 'Dr. Smith',
-    specialty: 'Dentist 🦷',
-    degree: 'DDS (Doctor of Dental Surgery)',
-    description: 'Dr. Smith has over 10 years of experience in providing dental care.',
-    image: '/assets/assets_frontend/doc1.png',
-  };
-
   useEffect(() => {
-    const fetchAppointment = async () => {
+    const fetchAppointmentAndDoctor = async () => {
       if (!session) return;
 
       try {
-        const response = await fetch(`/api/appointments?id=${session.user.id}`);
-        const data = await response.json();
-        if (data) {
-          setAppointment(data);
+        // Simulate fetching appointment details
+        const appointmentResponse = await fetch(`/api/appointments?id=${session.user.id}`);
+        const appointmentData = await appointmentResponse.json();
+        
+        if (appointmentData) {
+          setAppointment(appointmentData);
+          
+          // Find the doctor based on the doctorId in the appointment
+          const selectedDoctor = doctorsData.find(doctor => doctor.id === appointmentData.doctorId);
+          setDoctor(selectedDoctor || null); // Set the doctor or null if not found
         }
       } catch (error) {
-        console.error('Error fetching appointment:', error);
+        console.error("Error fetching appointment or doctor:", error);
       }
     };
 
-    fetchAppointment();
+    fetchAppointmentAndDoctor();
   }, [session]);
 
   const handlePayment = async (method: 'stripe' | 'paypal', cardDetails: any) => {
@@ -71,30 +71,40 @@ const AppointmentDetail: React.FC = () => {
     <>
       <div className="flex flex-col md:flex-row p-8 mt-32 mx-auto max-w-6xl">
         <div className="w-full md:w-2/6 mb-4 md:mb-0">
-          <Image
-            src={doctor.image}
-            alt={doctor.name}
-            width={300}
-            height={300}
-            className="object-cover bg-blue-500 rounded-md shadow-lg"
-          />
+          {doctor ? (
+            <Image
+              src={doctor.image}
+              alt={doctor.name}
+              width={300}
+              height={300}
+              className="object-cover bg-blue-500 rounded-md shadow-lg"
+            />
+          ) : (
+            <CircularProgress />
+          )}
         </div>
 
         <div className="w-full md:w-4/6 md:pl-4">
-          <div className='border p-4 rounded-lg shadow-md bg-white mb-4'>
-            <h1 className="text-3xl font-bold mb-2 flex items-center">
-              {doctor.name}
-              <Image
-                src="/images/verify.png"
-                alt="verify"
-                width={24}
-                height={24}
-                className="object-cover bg-slate-50 ml-4 rounded-full"
-              />
-            </h1>
-            <h2 className="text-xl font-semibold text-indigo-600 mb-4">{doctor.specialty}</h2>
-            <p className="text-md font-bold text-green-600 mb-1">Degree: {doctor.degree}</p>
-            <p className="text-sm text-slate-500 mb-4">{doctor.description}</p>
+          <div className="border p-4 rounded-lg shadow-md bg-white mb-4">
+            {doctor ? (
+              <>
+                <h1 className="text-3xl font-bold mb-2 flex items-center">
+                  {doctor.name}
+                  <Image
+                    src="/images/verify.png"
+                    alt="verify"
+                    width={24}
+                    height={24}
+                    className="object-cover bg-slate-50 ml-4 rounded-full"
+                  />
+                </h1>
+                <h2 className="text-xl font-semibold text-indigo-600 mb-4">{doctor.specialty}</h2>
+                <p className="text-md font-bold text-green-600 mb-1">Degree: {doctor.degree}</p>
+                <p className="text-sm text-slate-500 mb-4">{doctor.description}</p>
+              </>
+            ) : (
+              <CircularProgress />
+            )}
           </div>
 
           <div className="border p-4 rounded-lg shadow-md bg-white">

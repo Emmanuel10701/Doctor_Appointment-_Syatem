@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useSession } from 'next-auth/react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { CircularProgress } from '@mui/material';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
@@ -50,7 +49,7 @@ const educationLevels = ['Associate', 'Bachelor', 'Master', 'PhD'];
 const feesOptions = Array.from({ length: 10 }, (_, i) => (50 + i * 50).toString());
 
 const AddDoctorForm: React.FC = () => {
-  const { data: session } = useSession() as { data: Session | null };
+  const { data: session } = useSession();
   const router = useRouter();
   
   const [doctorName, setDoctorName] = useState('');
@@ -69,7 +68,7 @@ const AddDoctorForm: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/register'); // Adjust API endpoint as needed
+        const response = await fetch('/api/register');
         if (!response.ok) {
           throw new Error('Failed to fetch users');
         }
@@ -79,17 +78,14 @@ const AddDoctorForm: React.FC = () => {
         toast.error(`Error fetching users: ${error.message}`);
       }
     };
+
     fetchUsers();
   }, []);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedEmail = e.target.value;
     const selectedUser = userOptions.find(user => user.email === selectedEmail);
-    if (selectedUser) {
-      setDoctorName(selectedUser.name);
-    } else {
-      setDoctorName('');
-    }
+    setDoctorName(selectedUser ? selectedUser.name : '');
     setDoctorEmail(selectedEmail);
   };
 
@@ -101,14 +97,15 @@ const AddDoctorForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!session || !session.user?.id) {
-      toast.warn('You must be logged in to submit the form and admin only can create the doctors.');
-      return;
-    }
-
     setLoading(true);
 
+    // Check if session is available
+    if (!session) {
+      toast.error('Session not found. Please log in.');
+      setLoading(false);
+      return;
+    }
+  
     const formData = new FormData();
     formData.append('name', doctorName);
     formData.append('email', doctorEmail);
@@ -120,7 +117,7 @@ const AddDoctorForm: React.FC = () => {
     formData.append('address2', address2);
     formData.append('aboutMe', aboutMe);
     formData.append('userId', session.user.id);
-
+  
     if (image) {
       formData.append('image', image);
     }
@@ -134,7 +131,6 @@ const AddDoctorForm: React.FC = () => {
 
       if (response.status === 201) {
         toast.success('Doctor added successfully!');
-        // Reset form fields
         setDoctorName('');
         setDoctorEmail('');
         setSpecialty('');
@@ -147,10 +143,25 @@ const AddDoctorForm: React.FC = () => {
         setImage(null);
       } else {
         throw new Error('Failed to add doctor');
+        
       }
     } catch (error: any) {
-      console.error('Error:', error);
+      console.error('Error:', error.response?.data || error.message);
       toast.error('Error adding doctor. Please try again.');
+      console.log({
+        name: doctorName,
+        email: doctorEmail,
+        specialty,
+        experience,
+        fees,
+        education,
+        address1,
+        address2,
+        aboutMe,
+        userId: session.user.id,
+        image: image 
+      });
+      
     } finally {
       setLoading(false);
     }

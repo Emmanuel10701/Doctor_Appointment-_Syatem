@@ -4,22 +4,21 @@ import { NextResponse } from 'next/server';
 // Define the type for the appointment data
 interface AppointmentData {
   patientName: string;
-  doctorName: string;
+  doctorId: string; // Changed from doctorName to doctorId
   specialty: string;
   date: string; // Use string for ISO date format
   time: string;
   fee: number;
-  userId:string;
 }
 
 // POST request: Book a new appointment
 export async function POST(request: Request) {
   try {
     const body: AppointmentData = await request.json(); // Use the defined type here
-    const { patientName, doctorName, specialty, date, time, fee } = body;
+    const { patientName, doctorId, specialty, date, time, fee } = body;
 
     // Check for missing fields
-    if (!patientName || !doctorName || !specialty || !date || !time || !fee) {
+    if (!patientName || !doctorId || !specialty || !date || !time || !fee) {
       return new NextResponse(
         JSON.stringify({ message: 'Missing Fields' }),
         { status: 400 }
@@ -30,12 +29,11 @@ export async function POST(request: Request) {
     const appointment = await prisma.appointment.create({
       data: {
         patientName,
-        doctorName,
+        doctorId, // Use doctorId instead of doctorName
         specialty,
         date: new Date(date), // Ensure the date is in the correct format
         time,
         fee,
-        
       },
     });
 
@@ -54,20 +52,23 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const patientName = searchParams.get('patientName');
-    const doctorName = searchParams.get('doctorName');
+    const doctorId = searchParams.get('doctorId'); // Changed from doctorName to doctorId
 
     // Build query conditions
     const conditions: any = {}; // Use a type that can accept any structure
     if (patientName) {
       conditions.patientName = patientName;
     }
-    if (doctorName) {
-      conditions.doctorName = doctorName;
+    if (doctorId) {
+      conditions.doctorId = doctorId; // Use doctorId for filtering
     }
 
     // Fetch appointments based on conditions
     const appointments = await prisma.appointment.findMany({
       where: conditions,
+      include: {
+        doctor: true, // Include related doctor details
+      },
       orderBy: {
         createdAt: 'desc', // Optional: Order by createdAt or any other field
       },

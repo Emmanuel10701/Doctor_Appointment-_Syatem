@@ -1,5 +1,3 @@
-// schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -27,7 +25,7 @@ model User {
   sessions             Session[]               // Relation to NextAuth Sessions
   verificationTokens    VerificationToken[]    // Relation for password reset tokens
   passwordReset        passwordReset[]         // Relation for password reset tokens
-  doctors              Doctor[]                // Relation to doctors associated with this user
+  doctors              Doctor[]                @relation("UserDoctors") // Relation to doctors associated with this user
 }
 
 model Subscription {
@@ -82,6 +80,7 @@ model passwordReset {
 
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
 model Doctor {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
@@ -96,18 +95,21 @@ model Doctor {
   image       String?
   createdAt   DateTime @default(now())
   userId      String   @db.ObjectId // Foreign key to the User model
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User     @relation("UserDoctors", fields: [userId], references: [id], onDelete: Cascade) // Relation to User
+  appointments Appointment[] @relation("DoctorAppointments") // Relation to appointments
 }
+
 model Appointment {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   patientName String
-  doctorName  String
+  doctorId    String   @db.ObjectId // Foreign key to the Doctor model
   specialty   String
   date        DateTime
   time        String
   fee         Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  doctor      Doctor   @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade) // Relation to Doctor
 }
 
 model Patient {
@@ -121,4 +123,3 @@ model Patient {
   aboutMe    String
   image      String   // URL of the image
 }
-

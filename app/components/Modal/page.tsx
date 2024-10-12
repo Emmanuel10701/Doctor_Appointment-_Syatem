@@ -31,7 +31,7 @@ const MailModal: React.FC<MailModalProps> = ({ isOpen, onClose, onSend }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="fixed inset-0 flex items-center mx-4 md:mx-auto justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full relative">
         <button className="absolute top-2 right-2" onClick={onClose}>
           <FaTimes className="text-gray-600 hover:text-red-500 transition" />

@@ -16,6 +16,9 @@ export async function GET(req: NextRequest) {
   try {
     const appointment = await prisma.appointment.findUnique({
       where: { id: String(id) },
+      include: {
+        doctor: true, // Include related doctor details
+      },
     });
 
     if (!appointment) {
@@ -40,7 +43,7 @@ export async function PUT(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const id = pathname.split('/').pop(); // Extract ID from the URL
   const body = await req.json();
-  const { patientName, doctorName, specialty, date, time, fee } = body;
+  const { patientName, doctorId, specialty, date, time, fee } = body; // Change to doctorId
 
   if (!id) {
     return new NextResponse(
@@ -54,7 +57,7 @@ export async function PUT(req: NextRequest) {
       where: { id: String(id) },
       data: {
         patientName,
-        doctorName,
+        doctorId, // Use doctorId instead of doctorName
         specialty,
         date: new Date(date), // Ensure date is in the correct format
         time,
