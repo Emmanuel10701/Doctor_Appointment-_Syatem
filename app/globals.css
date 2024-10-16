@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -14,14 +13,16 @@
     --foreground: #ededed;
   }
 }
-body {
-  overflow-x: hidden;
-}
 
 body {
+  overflow-x: hidden;
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 @layer utilities {

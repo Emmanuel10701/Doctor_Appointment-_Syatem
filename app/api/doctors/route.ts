@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '../../../libs/prisma'; // Adjust the path if needed
+import prisma from '../../../libs/prisma'; // Adjust the path as needed
 
 // Handle POST request to create a new doctor
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    console.log('Prisma client:', prisma);
-    console.log('Doctor model:', prisma.doctor);
     const {
       name,
       email,
@@ -40,7 +38,6 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
-    const feesString = String(fees);
 
     // Check if the email is already in use
     const existingDoctor = await prisma.doctor.findUnique({
@@ -61,7 +58,7 @@ export async function POST(req: NextRequest) {
         email,
         specialty,
         experience,
-        fees: feesString, // Use the string representation of fees
+        fees: String(fees), // Use the string representation of fees
         education,
         address1,
         address2,
