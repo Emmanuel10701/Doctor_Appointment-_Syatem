@@ -22,10 +22,11 @@ const Dashboard: React.FC = () => {
   const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
   const [earnings, setEarnings] = useState(0);
   const [confirmButtonDisabled, setConfirmButtonDisabled] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false); // New state for modal
 
-  // Redirect to login if not authenticated
+  // Show modal if not authenticated
   if (status === 'unauthenticated') {
-    router.push('/login');
+    setShowLoginModal(true);
     return null;
   }
 
@@ -77,9 +78,13 @@ const Dashboard: React.FC = () => {
     setConfirmCancelId(null);
   };
 
+  const closeLoginModal = () => {
+    setShowLoginModal(false);
+  };
+
   return (
     <>
-      <div className="fixed top-0 left-0 w-full bg-white border-b border-blue-300 py-4 z-50 flex items-center justify-between">
+      <div className="fixed top-0 left-0 w-full overflow-y-scroll scrollbar-hide bg-white border-b border-blue-300 py-4 z-50 flex items-center justify-between">
         <div className="container mx-auto flex items-center px-4 md:px-8">
           <div className="w-44 cursor-pointer flex items-center">
             <Image src="/assets/assets_frontend/logo.svg" alt="Logo" width={176} height={50} />
@@ -196,6 +201,23 @@ const Dashboard: React.FC = () => {
                 {confirmButtonDisabled ? 'Cancelling...' : 'Confirm'}
               </button>
               <button onClick={closeModal} className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLoginModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold mb-4">Login Required</h2>
+            <p className="text-gray-700 mb-6">You need to be logged in to access this dashboard. Please log in to continue.</p>
+            <div className="flex justify-end gap-4">
+              <button onClick={closeLoginModal} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                Go to Login
+              </button>
+              <button onClick={closeLoginModal} className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">
                 Close
               </button>
             </div>
