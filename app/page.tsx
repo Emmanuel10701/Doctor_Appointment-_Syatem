@@ -44,7 +44,10 @@ const HeroSection: React.FC = () => {
   const handleclick = () => {
     route.push("alldoctors")
   }
+const handlenavigation =()=>{
+  route.push("register")
 
+}
   const displayedDoctors = showAll ? filteredDoctors : filteredDoctors.slice(0, 10);
 
   return (
@@ -158,7 +161,7 @@ const HeroSection: React.FC = () => {
     <p className="mb-4">
       Simply browse through our extensive list of trusted doctors, schedule your appointment hassle-free.
     </p>
-    <button className="bg-white text-blue-600 py-3 px-4 rounded-full font-bold">
+    <button onClick={handlenavigation} className="bg-white text-blue-600 py-3 hover:outline-2 hover:border px-4 rounded-full font-bold">
       Sign Up Now
     </button>
   </div>

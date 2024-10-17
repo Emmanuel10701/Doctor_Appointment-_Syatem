@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
+import CircularProgress from '@mui/material/CircularProgress';
+import {useRouter} from "next/navigation"
+import { toast } from 'react-toastify'; // Import toast
 import { z } from 'zod';
 
 interface User {
@@ -57,6 +60,7 @@ const AddDoctorForm: React.FC = () => {
   const [specialty, setSpecialty] = useState('');
   const [experience, setExperience] = useState('');
   const [fees, setFees] = useState('');
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [education, setEducation] = useState('');
   const [address1, setAddress1] = useState('');
   const [address2, setAddress2] = useState('');
@@ -83,6 +87,8 @@ const AddDoctorForm: React.FC = () => {
     fetchUsers();
   }, []);
 
+  const router = useRouter();
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedEmail = e.target.value;
     const selectedUser = userOptions.find(user => user.email === selectedEmail);
@@ -101,16 +107,17 @@ const AddDoctorForm: React.FC = () => {
     setLoading(true);
   
     if (!session || !session.user) {
-      alert('Session not found. Please log in.');
+      setLoginModalOpen(true); // Open the modal instead of alert
       setLoading(false);
       return;
     }
   
-    if (!selectedUserId) {
-      alert('User ID not found. Please select a valid email.');
-      setLoading(false);
-      return;
-    }
+   
+  if (!selectedUserId) {
+    toast.error('User ID not found. Please select a valid email.');
+    setLoading(false);
+    return;
+  }
   
     const formData = {
       name: doctorName,
@@ -132,7 +139,7 @@ const AddDoctorForm: React.FC = () => {
     
     if (!validationResult.success) {
       validationResult.error.errors.forEach((error) => {
-        alert(error.message);
+        toast.error(error.message);
       });
       setLoading(false);
       return;
@@ -141,14 +148,14 @@ const AddDoctorForm: React.FC = () => {
     try {
       const response = await axios.post('/api/doctors', formData);
       if (response.status === 201) {
-        alert('Doctor added successfully!');
+        toast.success('Doctor added successfully!');
         // Reset form fields...
       } else {
-        alert('Failed to add doctor');
+        toast.error('Failed to add doctor');
       }
     } catch (error: any) {
       console.error("Error adding doctor:", error); // Log the error for debugging
-      alert(`Error adding doctor: ${error.response?.data?.message || error.message}`);
+      toast.error(`Error adding doctor: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -215,16 +222,21 @@ const AddDoctorForm: React.FC = () => {
 
         {/* Experience and Fees */}
         <div className="flex flex-col sm:flex-row sm:space-x-6">
-          <div className="flex flex-col flex-1 mb-4 sm:mb-0">
-            <label className="font-semibold mb-1">Experience</label>
-            <input
-              type="text"
-              value={experience}
-              onChange={(e) => setExperience(e.target.value)}
-              required
-              className="p-2 border rounded focus:outline-none focus:ring focus:ring-blue-500"
-            />
-          </div>
+        <div className="flex flex-col flex-1 mb-4 sm:mb-0">
+          <label className="font-semibold mb-1">Experience</label>
+          <select
+            value={experience}
+            onChange={(e) => setExperience(e.target.value)}
+            required
+            className="p-2 border rounded focus:outline-none focus:ring focus:ring-blue-500"
+          >
+            <option value="" disabled>Select Experience</option>
+            {Array.from({ length: 10 }, (_, i) => `${i + 1} year${i === 0 ? '' : 's'}`).concat(['10+ years']).map((exp) => (
+              <option key={exp} value={exp}>{exp}</option>
+            ))}
+          </select>
+        </div>
+
           <div className="flex flex-col flex-1">
             <label className="font-semibold mb-1">Fees</label>
             <select
@@ -294,11 +306,40 @@ const AddDoctorForm: React.FC = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`bg-blue-500 text-white py-2 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`bg-transparent border border-blue-500 text-blue-500 w-3/5 py-3 rounded-full shadow transition duration-200 
+                      hover:bg-blue-500 hover:text-white focus:outline-none focus:ring focus:ring-blue-300
+                      ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          {loading ? 'Adding...' : 'Add Doctor'}
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <CircularProgress size={20} className="mr-2" color="inherit" />
+              Adding...
+            </div>
+          ) : (
+            'Add Doctor'
+          )}
         </button>
+
       </form>
+
+       {/* Login Modal */}
+       {loginModalOpen && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-2xl">
+                <h3 className="text-lg font-semibold">Login Required</h3>
+                <p className="mt-2">Please log in to confirm your appointment.</p>
+                <div className="flex justify-center mt-4">
+                  <button onClick={() => router.push("http://localhost:3000/login")} className="bg-transparent border border-blue-500 text-blue-500 py-3 px-6 rounded-full shadow hover:bg-blue-500 hover:text-white transition duration-200">
+                    Login
+                  </button>
+                  <button onClick={() => setLoginModalOpen(false)} className="bg-transparent border border-red-500 text-red-500 py-3 px-6 rounded-full shadow hover:bg-red-500 hover:text-white transition duration-200 ml-2">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
     </div>
   );
 };

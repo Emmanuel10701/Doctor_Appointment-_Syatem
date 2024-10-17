@@ -16,20 +16,19 @@ export async function POST(req: NextRequest) {
       address2,
       aboutMe,
       image,
-      userId
     } = body;
 
     // Validate required fields
-    if (!name || !email || !userId) {
+    if (!name || !email) {
       return new NextResponse(
-        JSON.stringify({ error: 'Name, email, and userId are required' }), 
+        JSON.stringify({ error: 'Name and email are required' }), 
         { status: 400 }
       );
     }
 
-    // Check if the user exists
+    // Check if the user exists by email
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { email },
     });
 
     if (!user) {
@@ -39,7 +38,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if the email is already in use
+    // Check if the email is already in use by another doctor
     const existingDoctor = await prisma.doctor.findUnique({
       where: { email },
     });
@@ -64,7 +63,7 @@ export async function POST(req: NextRequest) {
         address2,
         aboutMe,
         image,
-        userId,
+        user: { connect: { email } }, // Establish relationship with User by email
       },
     });
 
@@ -88,6 +87,7 @@ export async function GET(req: NextRequest) {
       // Fetch a single doctor by ID
       const doctor = await prisma.doctor.findUnique({
         where: { id },
+        include: { user: true }, // Include user data if needed
       });
 
       if (!doctor) {
@@ -100,7 +100,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(doctor);
     } else {
       // Fetch all doctors
-      const doctors = await prisma.doctor.findMany();
+      const doctors = await prisma.doctor.findMany({
+        include: { user: true }, // Include user data if needed
+      });
       return NextResponse.json(doctors);
     }
   } catch (error: any) {

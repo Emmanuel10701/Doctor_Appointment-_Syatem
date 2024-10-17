@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import localFont from "next/font/local";
 import Navbar from './components/navbar'; // Adjust the path as necessary
 import Footer from './components/Footer/page'; // Adjust the path as necessary
+import './globals.css'; // Adjust the path as needed
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
