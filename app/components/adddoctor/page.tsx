@@ -149,21 +149,33 @@ const AddDoctorForm: React.FC = () => {
       const response = await axios.post('/api/doctors', formData);
       if (response.status === 201) {
         toast.success('Doctor added successfully!');
-        // Reset form fields...
+        
+        // Reset form fields
+        setDoctorName('');
+        setDoctorEmail('');
+        setSpecialty('');
+        setExperience('');
+        setFees('');
+        setEducation('');
+        setAddress1('');
+        setAddress2('');
+        setAboutMe('');
+        setImageUrl(null);
+        setSelectedUserId(null);
+        
       } else {
         toast.error('Failed to add doctor');
       }
     } catch (error: any) {
       console.error("Error adding doctor:", error); // Log the error for debugging
-      toast.error(`Error adding doctor: ${error.response?.data?.message || error.message}`);
+      toast.error('Error adding doctor: A doctor with this email already exists.');
     } finally {
       setLoading(false);
     }
-  };
-  
+  }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-y-scroll scrollbar-hide overflow-hidden">
+    <div className="min-h-screen flex flex-col overflow-y-scroll scrollbar-hide">
       <form onSubmit={handleSubmit} className="flex flex-col p-6 space-y-4 max-w-4xl mx-auto">
         {/* Image URL Input */}
         <div className="flex flex-col">

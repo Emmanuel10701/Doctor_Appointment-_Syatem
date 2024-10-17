@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../libs/prisma';
-
-// GET request: Retrieve a single doctor by ID
+// GET request: Retrieve a single doctor by email
 export async function GET(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const id = pathname.split('/').pop(); // Extract ID from the URL
+  const email = pathname.split('/').pop(); // Extract email from the URL
 
-  if (!id) {
+  if (!email) {
     return new NextResponse(
-      JSON.stringify({ message: 'ID is required' }),
+      JSON.stringify({ message: 'Email is required' }),
       { status: 400 }
     );
   }
 
   const doctor = await prisma.doctor.findUnique({
-    where: { id: String(id) },
+    where: { email: String(email) }, // Use email instead of ID
   });
 
   if (!doctor) {

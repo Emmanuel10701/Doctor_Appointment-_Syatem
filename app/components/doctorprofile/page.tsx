@@ -1,9 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import CircularProgress from "@mui/material/CircularProgress";
+import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import Image from 'next/image';
+import Modal from '@mui/material/Modal';
+import Button from "@mui/material/Button";
 
 interface DoctorProfileData {
+    id: string;
     name: string;
     email: string;
     specialty: string;
@@ -13,75 +20,93 @@ interface DoctorProfileData {
     address1: string;
     address2: string;
     aboutMe: string;
-    profileImage: File | null;
+    image: string;
 }
 
-const DoctorProfile: React.FC = () => {
-    const [formData, setFormData] = useState<DoctorProfileData>({
-        name: '',
-        email: '',
-        specialty: '',
-        experience: '',
-        fees: '',
-        education: '',
-        address1: '',
-        address2: '',
-        aboutMe: '',
-        profileImage: null,
-    });
-    const [loading, setLoading] = useState(false);
-    const [isEditing, setIsEditing] = useState(true);
+const DoctorProfile = () => {
+    const { data: session } = useSession();
+    const [doctorData, setDoctorData] = useState<DoctorProfileData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [editing, setEditing] = useState(false);
+    const [formData, setFormData] = useState<DoctorProfileData | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        const storedData = localStorage.getItem('doctorProfile');
-        if (storedData) {
-            setFormData(JSON.parse(storedData));
-        }
-    }, []);
+        const fetchDoctorProfile = async () => {
+            if (session?.user?.email) {
+                const response = await fetch(`/api/doctors?email=${session.user.email}`);
+                const data = await response.json();
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target;
-
-        if (type === 'file') {
-            const files = (e.target as HTMLInputElement).files;
-            setFormData({
-                ...formData,
-                [name]: files && files.length > 0 ? files[0] : null,
-            });
-        } else {
-            setFormData({
-                ...formData,
-                [name]: value,
-            });
-        }
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            localStorage.setItem('doctorProfile', JSON.stringify(formData));
-            toast.success("Doctor profile saved successfully!");
-            setIsEditing(false);
-        } catch (error) {
-            toast.error("An error occurred. Please try again.");
-        } finally {
+                if (data) {
+                    setDoctorData(data);
+                    setFormData(data);
+                } else {
+                    setIsModalOpen(true); // Open modal if no doctor data is found
+                }
+            }
             setLoading(false);
+        };
+
+        fetchDoctorProfile();
+    }, [session]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        if (formData) {
+            const { name, value } = e.target;
+            setFormData({ ...formData, [name]: value });
         }
     };
 
-    const handleEditToggle = () => {
-        setIsEditing(!isEditing);
+    const handleUpdateProfile = async () => {
+        if (formData && doctorData) {
+            const response = await fetch(`/api/doctors/${doctorData.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+                const updatedDoctor = await response.json();
+                setDoctorData(updatedDoctor);
+                setEditing(false);
+                toast.success("Profile updated successfully!");
+            } else {
+                toast.error("Failed to update profile.");
+            }
+        }
     };
+
+    const handleConfirmEmail = async () => {
+        if (session?.user?.email) {
+            const response = await fetch('/api/doctors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: session.user.email }),
+            });
+
+            if (response.ok) {
+                toast.success("Your email has been confirmed. You can now complete your doctor profile!");
+                setIsModalOpen(false);
+            } else {
+                toast.error("Failed to confirm email. Please try again.");
+            }
+        }
+    };
+
+    if (loading) {
+        return <CircularProgress />;
+    }
 
     return (
-        <div className="flex items-center overflow-y-hidden mt-[100%] md:mt-[30%] justify-center w-full h-screen bg-slate-100 p-4">
-            <div className=" w-full md:w-[90%] bg-white p-8 rounded-lg shadow-lg">
-                {/* Profile Image */}
+        <div className="flex mt-[50%] items-center justify-center w-full h-screen bg-slate-100 p-4">
+            <div className="w-full md:w-[90%] bg-white p-8 rounded-lg shadow-lg">
                 <div className="flex justify-center mb-6">
                     <Image
-                        src={formData.profileImage ? URL.createObjectURL(formData.profileImage) : '/images/default.png'}
+                        src={editing ? formData?.image || '/images/default.png' : doctorData?.image || '/images/default.png'}
                         alt="Profile"
                         width={96}
                         height={96}
@@ -89,64 +114,108 @@ const DoctorProfile: React.FC = () => {
                     />
                 </div>
                 <h1 className="text-3xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-                    {isEditing ? 'Edit Doctor Profile' : 'Doctor Profile'}
+                    {editing ? 'Edit Doctor Profile' : 'Doctor Profile'}
                 </h1>
 
-                <form onSubmit={handleSubmit} className='w-full md:w-[80%]'>
-                    {/* Form Fields */}
-                    {[
-                        { label: 'Name', name: 'name', type: 'text' },
-                        { label: 'Email', name: 'email', type: 'email' },
-                        { label: 'Specialty', name: 'specialty', type: 'text' },
-                        { label: 'Experience', name: 'experience', type: 'text' },
-                        { label: 'Fees', name: 'fees', type: 'text' },
-                        { label: 'Education', name: 'education', type: 'text' },
-                        { label: 'Address 1', name: 'address1', type: 'text' },
-                        { label: 'Address 2', name: 'address2', type: 'text' },
-                        { label: 'About Me', name: 'aboutMe', type: 'text' },
-                    ].map(({ label, name, type }) => (
-                        <div className="mb-4" key={name}>
-                            <label className="block text-lg font-semibold text-indigo-600 mb-1">{label}</label>
-                            <input
-                                type={type}
-                                name={name}
-                                value={formData[name as keyof DoctorProfileData] as string} // Ensure it is a string
-                                onChange={handleChange}
-                                required
-                                disabled={!isEditing}
-                                className="p-3 border border-gray-300 rounded-lg shadow-inner w-[80%] focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                            />
+                <form onSubmit={(e) => { e.preventDefault(); handleUpdateProfile(); }} className={`w-full md:w-[80%] ${editing ? 'mt-12' : ''}`}>
+                    {doctorData ? (
+                        <>
+                            {[
+                                { label: 'Name', name: 'name', type: 'text' },
+                                { label: 'Email', name: 'email', type: 'email', disabled: true },
+                                { label: 'Specialty', name: 'specialty', type: 'text' },
+                                { label: 'Experience', name: 'experience', type: 'text' },
+                                { label: 'Fees', name: 'fees', type: 'text' },
+                                { label: 'Education', name: 'education', type: 'text' },
+                                { label: 'Address 1', name: 'address1', type: 'text' },
+                                { label: 'Address 2', name: 'address2', type: 'text' },
+                                { label: 'About Me', name: 'aboutMe', type: 'text' },
+                            ].map(({ label, name, type, disabled = false }) => (
+                                <div className="mb-4" key={name}>
+                                    <label className="block text-lg font-semibold text-indigo-600 mb-1">{label}</label>
+                                    {name === 'aboutMe' ? (
+                                        <textarea
+                                            name={name}
+                                            value={formData ? formData[name as keyof DoctorProfileData] : ''}
+                                            onChange={handleInputChange}
+                                            required
+                                            disabled={!editing}
+                                            className="p-3 border border-gray-300 rounded-lg shadow-inner w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                        />
+                                    ) : (
+                                        <input
+                                            type={type}
+                                            name={name}
+                                            value={formData ? formData[name as keyof DoctorProfileData] : ''}
+                                            onChange={handleInputChange}
+                                            required
+                                            disabled={!editing || disabled}
+                                            className="p-3 border border-gray-300 rounded-lg shadow-inner w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                        />
+                                    )}
+                                </div>
+                            ))}
+
+                            {/* Profile Image URL */}
+                            <div className="mb-4">
+                                <label className="block text-lg font-semibold text-indigo-600 mb-1">Profile Image URL</label>
+                                <input
+                                    type="url"
+                                    name="image"
+                                    value={formData ? formData.image : ''}
+                                    onChange={handleInputChange}
+                                    disabled={!editing}
+                                    required
+                                    className="p-3 border border-gray-300 rounded-lg shadow-inner w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        <div className="text-center text-gray-500">
+                            <p>No doctor data available. Please check back later.</p>
                         </div>
-                    ))}
-                    <div className="mb-4">
-                        <label className="block text-lg font-semibold my-6 text-indigo-600 mb-1">Upload Profile Image</label>
-                        <input
-                            type="file"
-                            name="profileImage"
-                            accept="image/*"
-                            onChange={handleChange}
-                            disabled={!isEditing}
-                            className="border border-gray-300 rounded p-2 shadow-inner w-[80%]"
-                        />
-                    </div>
-                    {/* Submit and Edit Buttons */}
+                    )}
+
                     <div className="flex justify-between mb-4">
                         <button
                             type="submit"
-                            className="w-full border border-indigo-600 text-indigo-600 py-2 rounded-full hover:bg-indigo-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-200"
+                            className={`bg-transparent border border-blue-500 text-blue-500 w-3/5 py-3 rounded-full shadow transition duration-200 
+                                        hover:bg-blue-500 hover:text-white focus:outline-none focus:ring focus:ring-blue-300`}
                         >
-                            {loading ? 'Loading...' : 'Save Profile'}
+                            {editing ? 'Save Profile' : 'Edit Profile'}
                         </button>
                         <button
                             type="button"
-                            onClick={handleEditToggle}
-                            className={`w-full border border-${isEditing ? 'red' : 'green'}-600 text-${isEditing ? 'red' : 'green'}-600 py-2 rounded-full hover:bg-${isEditing ? 'red' : 'green'}-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-${isEditing ? 'red' : 'green'}-500 focus:ring-opacity-50 transition duration-200 ml-2`}
+                            onClick={() => setEditing(!editing)}
+                            className={`w-full border border-${editing ? 'red' : 'green'}-600 text-${editing ? 'red' : 'green'}-600 py-2 rounded-full hover:bg-${editing ? 'red' : 'green'}-600 hover:text-white transition-all duration-200 ml-2`}
                         >
-                            {isEditing ? 'Cancel Edit' : 'Edit Profile'}
+                            {editing ? 'Cancel' : 'Edit Profile'}
                         </button>
                     </div>
                 </form>
+
                 <ToastContainer />
+
+                {/* Modal for confirming email */}
+                <Modal
+                    open={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    aria-labelledby="modal-title"
+                    aria-describedby="modal-description"
+                >
+                    <div className="flex items-center justify-center h-full">
+                        <div className="bg-white rounded-lg p-6 shadow-lg w-80">
+                            <h2 className="text-xl font-bold mb-2" id="modal-title">Confirm Your Email</h2>
+                            <p className="mb-4" id="modal-description">
+                                Your email {session?.user?.email} is not associated with any doctor profile. Would you like to create one?
+                            </p>
+                            <div className="flex justify-around">
+                                <Button variant="outlined" color="primary" onClick={handleConfirmEmail}>Yes</Button>
+                                <Button variant="outlined" color="secondary" onClick={() => setIsModalOpen(false)}>No</Button>
+                            </div>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </div>
     );
