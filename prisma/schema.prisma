@@ -102,14 +102,11 @@ model Doctor {
 model Appointment {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   patientName String
-  doctorId    String   @db.ObjectId // Foreign key to the Doctor model
-  specialty   String
+  doctorEmail String
+  doctor      Doctor   @relation("DoctorAppointments", fields: [doctorEmail], references: [email]) // Foreign key to Doctor
   date        DateTime
   time        String
   fee         Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  doctor      Doctor   @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade) // Relation to Doctor
 }
 
 model Patient {

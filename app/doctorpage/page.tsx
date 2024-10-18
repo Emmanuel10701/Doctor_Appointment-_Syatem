@@ -192,21 +192,29 @@ const Dashboard: React.FC = () => {
       </div>
 
       {confirmCancelId !== null && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold mb-4">Confirm Cancellation</h2>
-            <p className="text-gray-700 mb-6">Are you sure you want to cancel this appointment?</p>
-            <div className="flex justify-end gap-4">
-              <button onClick={confirmCancellation} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700" disabled={confirmButtonDisabled}>
-                {confirmButtonDisabled ? 'Cancelling...' : 'Confirm'}
-              </button>
-              <button onClick={closeModal} className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-4">Confirm Cancellation</h2>
+      <p className="text-gray-700 mb-6">Are you sure you want to cancel this appointment?</p>
+      <div className="flex justify-end gap-4">
+        <button 
+          onClick={confirmCancellation} 
+          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200" 
+          disabled={confirmButtonDisabled}
+        >
+          {confirmButtonDisabled ? 'Cancelling...' : 'Confirm'}
+        </button>
+        <button 
+          onClick={closeModal} 
+          className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {showLoginModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react'; // Import useSession
-import { useRouter } from 'next/navigation'; // Import useRouter for redirection
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
@@ -17,23 +17,23 @@ interface PatientDetails {
   gender: string;
   address: string;
   aboutMe: string;
-  image: string | File;
+  image: string; // Changed to string for URL
 }
 
-const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
-  const { data: session, status } = useSession(); // Get the session
+const PatientProfile: React.FC = () => {
+  const { data: session, status } = useSession();
   const router = useRouter();
   
   const [isEditing, setIsEditing] = useState<boolean>(true);
   const [patientDetails, setPatientDetails] = useState<PatientDetails>({
     name: '',
-    email: '',
+    email: session?.user?.email || '', // Default to empty string if undefined
     phone: '',
     birthDate: '',
     gender: '',
     address: '',
     aboutMe: '',
-    image: '/images/default.png',
+    image: session?.user?.image || '/images/default.png', // Default image URL
   });
 
   const [isDataSubmitted, setIsDataSubmitted] = useState<boolean>(false);
@@ -51,32 +51,26 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
   }
 
   // Redirect unauthenticated users
- 
-
   useEffect(() => {
-    if (patientId) {
-      const fetchPatientDetails = async () => {
-        try {
-          const response = await axios.get(`${apiUrl}/${patientId}`);
-          setPatientDetails(response.data);
-        } catch (error: any) {
-          toast.error(`Error fetching patient: ${error.message}`);
-        }
-      };
-      fetchPatientDetails();
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    } else if (session && session.user?.email) {
+      fetchPatientDetails(session.user.email);
     }
-  }, [patientId]);
+  }, [status, session]);
+
+  const fetchPatientDetails = async (email: string) => {
+    try {
+      const response = await axios.get(`${apiUrl}/email/${email}`);
+      setPatientDetails(response.data);
+    } catch (error: any) {
+      toast.error(`Error fetching patient: ${error.message}`);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setPatientDetails((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      setPatientDetails((prev) => ({ ...prev, image: files[0] }));
-    }
   };
 
   const handleSave = async () => {
@@ -89,13 +83,8 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
     });
 
     try {
-      if (patientId) {
-        await axios.put(`${apiUrl}/${patientId}`, formData); // Update existing profile
-        toast.success('Profile updated successfully');
-      } else {
-        await axios.post(apiUrl, formData); // Create new profile
-        toast.success('Profile created successfully');
-      }
+      await axios.put(`${apiUrl}/${patientDetails.email}`, formData); // Update existing profile
+      toast.success('Profile updated successfully');
       setIsDataSubmitted(true);
     } catch (error: any) {
       toast.error(`Error saving profile: ${error.message}`);
@@ -104,10 +93,6 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
       setIsEditing(false);
     }
   };
-
-  const imageUrl = typeof patientDetails.image === 'string'
-    ? patientDetails.image
-    : URL.createObjectURL(patientDetails.image);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -127,7 +112,7 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
           <div className="flex-none mb-6">
             <label className="cursor-pointer bg-slate-500 rounded-full">
               <Image
-                src={imageUrl}
+                src={patientDetails.image}
                 alt="Patient"
                 width={100}
                 height={100}
@@ -135,7 +120,12 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
               />
               <input
                 type="file"
-                onChange={handleFileChange}
+                onChange={(e) => {
+                  const files = e.target.files;
+                  if (files && files.length > 0) {
+                    setPatientDetails((prev) => ({ ...prev, image: URL.createObjectURL(files[0]) })); // Handle image URL
+                  }
+                }}
                 className="hidden"
               />
             </label>
@@ -144,7 +134,6 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
           <div className="flex w-full">
             <div className="flex-1 pr-4">
               <h3 className="text-lg font-bold mb-2">Patient Information</h3>
-              <h4 className="text-md font-semibold mb-2">Contact Information</h4>
               {['name', 'email', 'phone'].map((key) => (
                 <div key={key} className="mb-4">
                   <label className="block text-gray-700 font-bold">
@@ -237,4 +226,5 @@ const PatientProfile: React.FC<{ patientId?: string }> = ({ patientId }) => {
     </>
   );
 };
+
 export default PatientProfile;

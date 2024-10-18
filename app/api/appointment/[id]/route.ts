@@ -1,8 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../libs/prisma';
 
+// POST request: Create a new appointment
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const { patientName, doctorName, specialty, date, time, fee } = body;
+
+  // Check for missing fields
+  if (!patientName || !doctorName || !specialty || !date || !time || !fee) {
+    return new NextResponse(
+      JSON.stringify({ message: 'Missing Fields' }),
+      { status: 400 }
+    );
+  }
+
+  try {
+    // Create a new appointment without doctor relation
+    const appointment = await prisma.appointment.create({
+      data: {
+        patientName,
+        doctorName, // Store doctor name directly
+        specialty,
+        date: new Date(date),
+        time,
+        fee,
+      },
+    });
+
+    return new NextResponse(JSON.stringify(appointment), { status: 201 });
+  } catch (error:any) {
+    console.error('Error during POST:', error);
+    return new NextResponse(
+      JSON.stringify({ message: 'Internal Server Error', details: error.message }),
+      { status: 500 }
+    );
+  }
+}
+
+// GET request: Retrieve all appointments
+export async function GET() {
+  try {
+    const appointments = await prisma.appointment.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json(appointments, { status: 200 });
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch appointments.',
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    }, { status: 500 });
+  }
+}
+
 // GET request: Retrieve a single appointment by ID
-export async function GET(req: NextRequest) {
+export async function GET_ONE(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const id = pathname.split('/').pop(); // Extract ID from the URL
 
@@ -16,9 +71,6 @@ export async function GET(req: NextRequest) {
   try {
     const appointment = await prisma.appointment.findUnique({
       where: { id: String(id) },
-      include: {
-        doctor: true, // Include related doctor details
-      },
     });
 
     if (!appointment) {
@@ -43,7 +95,7 @@ export async function PUT(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const id = pathname.split('/').pop(); // Extract ID from the URL
   const body = await req.json();
-  const { patientName, doctorId, specialty, date, time, fee } = body; // Change to doctorId
+  const { patientName, doctorName, specialty, date, time, fee } = body; // Use doctorName
 
   if (!id) {
     return new NextResponse(
@@ -57,7 +109,7 @@ export async function PUT(req: NextRequest) {
       where: { id: String(id) },
       data: {
         patientName,
-        doctorId, // Use doctorId instead of doctorName
+        doctorName, // Use doctorName directly
         specialty,
         date: new Date(date), // Ensure date is in the correct format
         time,
