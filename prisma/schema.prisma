@@ -26,6 +26,7 @@ model User {
   verificationTokens    VerificationToken[]    // Relation for password reset tokens
   passwordReset        passwordReset[]         // Relation for password reset tokens
   doctors              Doctor[]                @relation("UserDoctors") // Relation to doctors associated with this user
+
 }
 
 model Subscription {
@@ -91,23 +92,14 @@ model Doctor {
   education   String
   address1    String
   address2    String?
-  aboutMe     String?
+  aboutMe     String? 
   image       String?
   createdAt   DateTime @default(now())
   userId      String   @db.ObjectId // Foreign key to the User model
   user        User     @relation("UserDoctors", fields: [userId], references: [id], onDelete: Cascade) // Relation to User
-  appointments Appointment[] @relation("DoctorAppointments") // Relation to appointments
 }
 
-model Appointment {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  patientName String
-  doctorEmail String
-  doctor      Doctor   @relation("DoctorAppointments", fields: [doctorEmail], references: [email]) // Foreign key to Doctor
-  date        DateTime
-  time        String
-  fee         Float
-}
+
 
 model Patient {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -119,4 +111,12 @@ model Patient {
   address    String
   aboutMe    String
   image      String   // URL of the image
+}
+model Appointment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  patientName String
+  doctorEmail String   // Ensure this is non-nullable
+  date        DateTime
+  time        String
+  fee         Float
 }

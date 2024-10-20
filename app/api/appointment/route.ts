@@ -1,85 +1,60 @@
-import prisma from '../../../libs/prisma';
 import { NextResponse } from 'next/server';
+import prisma from '../../../libs/prisma'; // Adjust the import according to your project structure
 
-// Define the type for the appointment data
-interface AppointmentData {
-  patientName: string;
-  doctorId: string; // Changed from doctorName to doctorId
-  specialty: string;
-  date: string; // Use string for ISO date format
-  time: string;
-  fee: number;
-}
-
-// POST request: Book a new appointment
+// Handle POST request to create a new appointment
 export async function POST(request: Request) {
-  try {
-    const body: AppointmentData = await request.json(); // Use the defined type here
-    const { patientName, doctorId, specialty, date, time, fee } = body;
+  const { patientName, doctorEmail, date, time, fee } = await request.json();
 
-    // Check for missing fields
-    if (!patientName || !doctorId || !specialty || !date || !time || !fee) {
-      return new NextResponse(
-        JSON.stringify({ message: 'Missing Fields' }),
-        { status: 400 }
-      );
+  // Validate required fields
+  if (!patientName || !doctorEmail || !date || !time || !fee) {
+    return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
+  }
+
+  try {
+    // Check if the doctor exists by email
+    const doctor = await prisma.doctor.findUnique({
+      where: { email: doctorEmail },
+    });
+
+    if (!doctor) {
+      return NextResponse.json({ error: 'Doctor not found.' }, { status: 404 });
     }
 
-    // Create new appointment
-    const appointment = await prisma.appointment.create({
+    // Create the new appointment entry
+    const newAppointment = await prisma.appointment.create({
       data: {
         patientName,
-        doctorId, // Use doctorId instead of doctorName
-        specialty,
-        date: new Date(date), // Ensure the date is in the correct format
+        doctorEmail,
+        date: new Date(date),
         time,
         fee,
       },
     });
 
-    return new NextResponse(JSON.stringify(appointment), { status: 201 });
-  } catch (error) {
-    console.error(error);
-    return new NextResponse(
-      JSON.stringify({ message: 'Internal Server Error' }),
-      { status: 500 }
-    );
+    return NextResponse.json(newAppointment, { status: 201 });
+  } catch (error: any) {
+    console.error('Error creating appointment:', error);
+    return NextResponse.json({ error: 'Appointment creation failed.', details: error.message }, { status: 500 });
   }
 }
 
-// GET request: Retrieve appointments
+// Handle GET request to retrieve appointments
 export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const doctorEmail = searchParams.get('doctorEmail'); // Optional filter
+
   try {
-    const { searchParams } = new URL(request.url);
-    const patientName = searchParams.get('patientName');
-    const doctorId = searchParams.get('doctorId'); // Changed from doctorName to doctorId
-
-    // Build query conditions
-    const conditions: any = {}; // Use a type that can accept any structure
-    if (patientName) {
-      conditions.patientName = patientName;
-    }
-    if (doctorId) {
-      conditions.doctorId = doctorId; // Use doctorId for filtering
-    }
-
-    // Fetch appointments based on conditions
+    // Retrieve appointments, optionally filtering by doctorEmail
     const appointments = await prisma.appointment.findMany({
-      where: conditions,
-      include: {
-        doctor: true, // Include related doctor details
-      },
+      where: doctorEmail ? { doctorEmail } : undefined,
       orderBy: {
-        createdAt: 'desc', // Optional: Order by createdAt or any other field
+        date: 'asc', // You can change this to 'desc' if you want the latest first
       },
     });
 
-    return new NextResponse(JSON.stringify(appointments), { status: 200 });
-  } catch (error) {
-    console.error(error);
-    return new NextResponse(
-      JSON.stringify({ message: 'Internal Server Error' }),
-      { status: 500 }
-    );
+    return NextResponse.json(appointments, { status: 200 });
+  } catch (error: any) {
+    console.error('Error retrieving appointments:', error);
+    return NextResponse.json({ error: 'Failed to retrieve appointments.', details: error.message }, { status: 500 });
   }
 }
