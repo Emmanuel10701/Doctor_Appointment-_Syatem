@@ -1,15 +1,16 @@
 ### Create Appointmentappointment
-PUT     http://localhost:3000/api/appointment/671b8f82cc333699d35b0ae6
+POST     http://localhost:3000/api/appointment
 Content-Type: application/json
 Accept: application/json
 
 {
-  "patientName": "Charlie Brown",
-  "doctorEmail": "newadmin@example.com",
+  "patientName": "Charlie green",
+    "doctorEmail": "juma@gmail.com",
   "date": "2024-11-01",
   "time": "09:00",
   "fee": 130
 }
+
 
 
 

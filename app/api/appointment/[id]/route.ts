@@ -43,7 +43,7 @@ export async function PUT(req: NextRequest) {
   const updatedAppointment = await prisma.appts.update({
     where: { id: String(id) }, // Convert ID to string
     data: {
-      patientEmail: body.patientName,
+      patientName: body.patientName, // Updated field
       doctorEmail: body.doctorEmail,
       date: new Date(body.date), // Assuming this is a valid date string
       time: body.time,

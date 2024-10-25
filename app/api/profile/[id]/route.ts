@@ -1,10 +1,9 @@
 import prisma from '../../../../libs/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Handle GET request for a single patient
 export async function GET(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const id = pathname.split('/').pop(); // Extract ID from the URL
+  const id = pathname.split('/').pop();
 
   if (!id) {
     return new NextResponse(
@@ -14,7 +13,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Fetch a single patient by ID
     const patient = await prisma.patient.findUnique({
       where: { id: String(id) },
       select: {
@@ -46,10 +44,9 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Update patient
 export async function PUT(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const id = pathname.split('/').pop(); // Extract ID from the URL
+  const id = pathname.split('/').pop();
   const body = await req.json();
 
   if (!id) {
@@ -60,17 +57,19 @@ export async function PUT(req: NextRequest) {
   }
 
   try {
+    const birthDate = body.birthDate ? new Date(body.birthDate).toISOString() : undefined;
+
     const updatedPatient = await prisma.patient.update({
       where: { id: String(id) },
       data: {
         name: body.name,
         email: body.email,
         phone: body.phone,
-        birthDate: body.birthDate,
+        birthDate,
         gender: body.gender,
         address: body.address,
         aboutMe: body.aboutMe,
-        image: body.image, // Adjust based on how you handle images
+        image: body.image,
       },
       select: {
         name: true,
@@ -94,10 +93,9 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE request: Delete a patient by ID
 export async function DELETE(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const id = pathname.split('/').pop(); // Extract ID from the URL
+  const id = pathname.split('/').pop();
 
   if (!id) {
     return new NextResponse(

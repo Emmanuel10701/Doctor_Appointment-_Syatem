@@ -114,7 +114,7 @@ model Patient {
 }
 model Appts {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  patientEmail String
+  patientName String
   doctorEmail String   // Ensure this is non-nullable
   date        DateTime
   time        String

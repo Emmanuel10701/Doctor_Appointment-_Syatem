@@ -17,23 +17,23 @@ interface PatientDetails {
   gender: string;
   address: string;
   aboutMe: string;
-  image: string; // Changed to string for URL
+  image: string; // URL string for the image
 }
 
 const PatientProfile: React.FC = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
-  
+
   const [isEditing, setIsEditing] = useState<boolean>(true);
   const [patientDetails, setPatientDetails] = useState<PatientDetails>({
     name: '',
-    email: session?.user?.email || '', // Default to empty string if undefined
+    email: session?.user?.email || '',
     phone: '',
     birthDate: '',
     gender: '',
     address: '',
     aboutMe: '',
-    image: session?.user?.image || '/images/default.png', // Default image URL
+    image: session?.user?.image || '/images/default.png',
   });
 
   const [isDataSubmitted, setIsDataSubmitted] = useState<boolean>(false);
@@ -41,23 +41,14 @@ const PatientProfile: React.FC = () => {
 
   const apiUrl = 'http://localhost:3000/api/profile';
 
-  // If the session is still loading, show a loading spinner
-  if (status === 'loading') {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <CircularProgress />
-      </div>
-    );
-  }
-
-  // Redirect unauthenticated users
   useEffect(() => {
+    if (status === 'loading') return;
     if (status === 'unauthenticated') {
       router.push('/login');
     } else if (session && session.user?.email) {
       fetchPatientDetails(session.user.email);
     }
-  }, [status, session]);
+  }, [status, session, router]);
 
   const fetchPatientDetails = async (email: string) => {
     try {
@@ -78,12 +69,12 @@ const PatientProfile: React.FC = () => {
     const formData = new FormData();
     Object.entries(patientDetails).forEach(([key, value]) => {
       if (value) {
-        formData.append(key, value as any);
+        formData.append(key, value as string);
       }
     });
 
     try {
-      await axios.put(`${apiUrl}/${patientDetails.email}`, formData); // Update existing profile
+      await axios.put(`${apiUrl}/${patientDetails.email}`, formData);
       toast.success('Profile updated successfully');
       setIsDataSubmitted(true);
     } catch (error: any) {
@@ -98,6 +89,7 @@ const PatientProfile: React.FC = () => {
 
   return (
     <>
+      <ToastContainer />
       <div className="fixed top-0 left-0 w-full mb-10 bg-white border-b border-blue-300 bg-transparent py-4 z-50 flex items-center justify-between">
         <div className="container mx-auto flex items-center px-4 md:px-8">
           <div className="w-44 cursor-pointer flex items-center">
@@ -107,7 +99,6 @@ const PatientProfile: React.FC = () => {
         </div>
       </div>
       <div className="flex flex-col overflow-y-hidden justify-center items-center mt-20 h-screen">
-        <ToastContainer />
         <div className="p-6 bg-white rounded-lg shadow-md w-full max-w-4xl flex flex-col items-center">
           <div className="flex-none mb-6">
             <label className="cursor-pointer bg-slate-500 rounded-full">
@@ -123,7 +114,7 @@ const PatientProfile: React.FC = () => {
                 onChange={(e) => {
                   const files = e.target.files;
                   if (files && files.length > 0) {
-                    setPatientDetails((prev) => ({ ...prev, image: URL.createObjectURL(files[0]) })); // Handle image URL
+                    setPatientDetails((prev) => ({ ...prev, image: URL.createObjectURL(files[0]) }));
                   }
                 }}
                 className="hidden"

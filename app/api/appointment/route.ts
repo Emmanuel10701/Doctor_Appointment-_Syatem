@@ -3,10 +3,10 @@ import prisma from '../../../libs/prisma'; // Adjust the import according to you
 
 // Handle POST request to create a new appointment
 export async function POST(request: Request) {
-  const { patientEmail, doctorEmail, date, time, fee } = await request.json();
+  const { patientName, doctorEmail, date, time, fee } = await request.json();
 
   // Validate required fields
-  if (!patientEmail || !doctorEmail || !date || !time || !fee) {
+  if (!patientName || !doctorEmail || !date || !time || !fee) {
     return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
   }
 
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     // Create the new appointment entry
     const newAppointment = await prisma.appts.create({
       data: {
-        patientEmail,
+        patientName,
         doctorEmail,
         date: new Date(date),
         time,
