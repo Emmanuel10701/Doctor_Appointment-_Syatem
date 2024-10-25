@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from 'react';
 import Modal from 'react-modal'; // Make sure to install react-modal
 import { CircularProgress } from '@mui/material';
