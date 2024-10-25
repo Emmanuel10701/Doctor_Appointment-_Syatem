@@ -1,5 +1,5 @@
 ### Create Appointmentappointment
-GET    http://localhost:3000/api/appointment
+PUT     http://localhost:3000/api/appointment/671b8f82cc333699d35b0ae6
 Content-Type: application/json
 Accept: application/json
 
@@ -8,7 +8,7 @@ Accept: application/json
   "doctorEmail": "newadmin@example.com",
   "date": "2024-11-01",
   "time": "09:00",
-  "fee": 80
+  "fee": 130
 }
 
 
