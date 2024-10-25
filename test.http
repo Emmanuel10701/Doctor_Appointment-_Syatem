@@ -1,12 +1,17 @@
 ### Create Appointmentappointment
-GET http://localhost:3000/api/appointment
+GET    http://localhost:3000/api/appointment
 Content-Type: application/json
 Accept: application/json
 
 {
-  "patientName": "Alice Johnson",
-  "doctorEmail": "juma@gmail.com",
-  "date": "2024-10-30",
-  "time": "10:30",
-  "fee": 150.00
+  "patientName": "Charlie Brown",
+  "doctorEmail": "newadmin@example.com",
+  "date": "2024-11-01",
+  "time": "09:00",
+  "fee": 80
 }
+
+
+
+
+

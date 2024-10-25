@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { FaUserMd, FaCalendarCheck, FaBars } from 'react-icons/fa';
 import { CircularProgress } from '@mui/material';
@@ -7,10 +7,14 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import DoctorProfile from '../components/doctorprofile/page';
 
-const appointments = [
-  { id: 1, doctor: 'Dr. Smith', date: '2024-09-30', status: 'Confirmed', fee: 100, patientEmail: 'patient1@example.com' },
-  { id: 2, doctor: 'Dr. Johnson', date: '2024-10-01', status: 'Pending', fee: 150, patientEmail: 'patient2@example.com' },
-];
+interface Appointment {
+  id: number;
+  doctor: string;
+  date: string;
+  status: string;
+  fee: number;
+  patientEmail: string;
+}
 
 const Dashboard: React.FC = () => {
   const { data: session, status } = useSession();
@@ -20,15 +24,34 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [earnings, setEarnings] = useState(0);
   const [confirmButtonDisabled, setConfirmButtonDisabled] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false); // New state for modal
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Show modal if not authenticated
-  if (status === 'unauthenticated') {
-    setShowLoginModal(true);
-    return null;
-  }
+  // Fetch appointments based on doctor's email
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchAppointments();
+    } else if (status === 'unauthenticated') {
+      setShowLoginModal(true);
+    }
+  }, [status]);
+
+  const fetchAppointments = async () => {
+    const res = await fetch('/api/appointments');
+    const data: Appointment[] = await res.json();
+    const doctorEmail = session?.user?.email;
+
+    if (doctorEmail) {
+      const filteredAppointments = data.filter(app => app.patientEmail === doctorEmail);
+      setAppointments(filteredAppointments);
+      setEarnings(filteredAppointments.reduce((total, app) => total + app.fee, 0));
+    }
+  };
+
+
+ 
 
   const handleTabChange = (tab: 'appointments' | 'profile') => {
     setLoading(true);
@@ -42,6 +65,11 @@ const Dashboard: React.FC = () => {
   const handleCancelAppointment = (id: number) => {
     setConfirmCancelId(id);
   };
+
+  const loginNavigation = () => {
+    router.push('/login');
+  };
+  
 
   const confirmCancellation = async () => {
     if (confirmButtonDisabled) return;
@@ -57,6 +85,8 @@ const Dashboard: React.FC = () => {
           headers: { 'Content-Type': 'application/json' },
         });
         console.log('Cancelled appointment:', confirmCancelId);
+        setAppointments(appointments.filter(app => app.id !== confirmCancelId));
+        setEarnings(prev => prev - (appointment.fee || 0));
         setConfirmCancelId(null);
       }
     } catch (error) {
@@ -192,29 +222,28 @@ const Dashboard: React.FC = () => {
       </div>
 
       {confirmCancelId !== null && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-4">Confirm Cancellation</h2>
-      <p className="text-gray-700 mb-6">Are you sure you want to cancel this appointment?</p>
-      <div className="flex justify-end gap-4">
-        <button 
-          onClick={confirmCancellation} 
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200" 
-          disabled={confirmButtonDisabled}
-        >
-          {confirmButtonDisabled ? 'Cancelling...' : 'Confirm'}
-        </button>
-        <button 
-          onClick={closeModal} 
-          className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold mb-4">Confirm Cancellation</h2>
+            <p className="text-gray-700 mb-6">Are you sure you want to cancel this appointment?</p>
+            <div className="flex justify-end gap-4">
+              <button 
+                onClick={confirmCancellation} 
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200" 
+                disabled={confirmButtonDisabled}
+              >
+                {confirmButtonDisabled ? 'Cancelling...' : 'Confirm'}
+              </button>
+              <button 
+                onClick={closeModal} 
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showLoginModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -222,13 +251,20 @@ const Dashboard: React.FC = () => {
             <h2 className="text-2xl font-bold mb-4">Login Required</h2>
             <p className="text-gray-700 mb-6">You need to be logged in to access this dashboard. Please log in to continue.</p>
             <div className="flex justify-end gap-4">
-              <button onClick={closeLoginModal} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                Go to Login
-              </button>
-              <button onClick={closeLoginModal} className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">
-                Close
-              </button>
-            </div>
+          <button
+            onClick={loginNavigation}
+            className="bg-blue-600 bg-opacity-80 text-white px-4 py-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50 transition duration-200"
+          >
+            Go to Login
+          </button>
+          <button
+            onClick={closeLoginModal}
+            className="bg-gray-300 bg-opacity-80 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition duration-200"
+          >
+            Close
+          </button>
+        </div>
+
           </div>
         </div>
       )}
