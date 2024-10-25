@@ -6,39 +6,67 @@ import { useSession } from "next-auth/react";
 import { CircularProgress } from "@mui/material";
 import { doctorsData } from '../components/data/page'; // Import your local doctor data
 
+// Define types for appointment and doctor
+interface Appointment {
+  id: number;
+  date: string;
+  time: string;
+  fee: number;
+  patientName: string;
+  doctorId: number;
+}
+
+interface Doctor {
+  id: number;
+  name: string;
+  specialty: string;
+  degree: string;
+  description: string;
+  image: string;
+}
+
 const AppointmentDetail: React.FC = () => {
-  const { data: session } = useSession() as { data: { user: { id: string } } | null };
-  const [appointment, setAppointment] = useState<{ id: number; date: string; time: string; fee: number; doctorId: number } | null>(null);
-  const [doctor, setDoctor] = useState<{ name: string; specialty: string; degree: string; description: string; image: string } | null>(null);
+  const { data: session } = useSession() as { data: { user: { name: string; id: string } } | null };
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [doctors, setDoctors] = useState<{ [key: number]: Doctor }>({});
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid'>('pending');
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   useEffect(() => {
-    const fetchAppointmentAndDoctor = async () => {
+    const fetchAppointments = async () => {
       if (!session) return;
 
       try {
-        // Simulate fetching appointment details
-        const appointmentResponse = await fetch(`/api/appointments?id=${session.user.id}`);
-        const appointmentData = await appointmentResponse.json();
+        // Fetch appointments for the logged-in user
+        const response = await fetch(`/api/appointments?userId=${session.user.id}`);
+        const data: Appointment[] = await response.json();
         
-        if (appointmentData) {
-          setAppointment(appointmentData);
-          
-          // Find the doctor based on the doctorId in the appointment
-          const selectedDoctor = doctorsData.find(doctor => doctor.id === appointmentData.doctorId);
-          setDoctor(selectedDoctor || null); // Set the doctor or null if not found
-        }
+        // Filter appointments based on the user's name (case-insensitive)
+        const userAppointments = data.filter((appt) => 
+          appt.patientName.toLowerCase() === session.user.name.toLowerCase()
+        );
+
+        setAppointments(userAppointments);
+
+        // Map doctor IDs to doctor details for quick access
+        const doctorMap: { [key: number]: Doctor } = {};
+        userAppointments.forEach((appt) => {
+          const selectedDoctor = doctorsData.find(doctor => doctor.id === appt.doctorId);
+          if (selectedDoctor) {
+            doctorMap[appt.id] = selectedDoctor;
+          }
+        });
+        setDoctors(doctorMap);
       } catch (error) {
-        console.error("Error fetching appointment or doctor:", error);
+        console.error("Error fetching appointments:", error);
       }
     };
 
-    fetchAppointmentAndDoctor();
+    fetchAppointments();
   }, [session]);
 
-  const handlePayment = async (method: 'stripe' | 'paypal', cardDetails: any) => {
+  const handlePayment = async (method: 'stripe' | 'paypal', appointmentId: number, fee: number, cardDetails: any) => {
     const url = method === 'stripe' ? '/api/payments/stripe' : '/api/payments/paypal';
     try {
       const response = await fetch(url, {
@@ -47,8 +75,8 @@ const AppointmentDetail: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          appointmentId: appointment?.id,
-          fee: appointment?.fee,
+          appointmentId,
+          fee,
           cardDetails,
         }),
       });
@@ -69,84 +97,59 @@ const AppointmentDetail: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row p-8 mt-32 mx-auto max-w-6xl">
-        <div className="w-full md:w-2/6 mb-4 md:mb-0">
-          {doctor ? (
-            <Image
-              src={doctor.image}
-              alt={doctor.name}
-              width={300}
-              height={300}
-              className="object-cover bg-blue-500 rounded-md shadow-lg"
-            />
-          ) : (
-            <CircularProgress />
-          )}
-        </div>
-
-        <div className="w-full md:w-4/6 md:pl-4">
-          <div className="border p-4 rounded-lg shadow-md bg-white mb-4">
-            {doctor ? (
-              <>
-                <h1 className="text-3xl font-bold mb-2 flex items-center">
-                  {doctor.name}
-                  <Image
-                    src="/images/verify.png"
-                    alt="verify"
-                    width={24}
-                    height={24}
-                    className="object-cover bg-slate-50 ml-4 rounded-full"
-                  />
-                </h1>
-                <h2 className="text-xl font-semibold text-indigo-600 mb-4">{doctor.specialty}</h2>
-                <p className="text-md font-bold text-green-600 mb-1">Degree: {doctor.degree}</p>
-                <p className="text-sm text-slate-500 mb-4">{doctor.description}</p>
-              </>
-            ) : (
-              <CircularProgress />
-            )}
-          </div>
-
-          <div className="border p-4 rounded-lg shadow-md bg-white">
-            <h3 className='text-start my-2 text-indigo-600 text-lg font-bold'>
-              Appointment Details
-            </h3>
-            {appointment ? (
-              <div className="flex justify-between items-center">
-                <div>
-                  <p>Date: {appointment.date}</p>
-                  <p>Time: {appointment.time}</p>
-                  <p>Fee: <span className='font-extrabold text-green-700'>${appointment.fee}</span></p>
-                </div>
-                <div className="flex flex-col mb-20 ml-10">
-                  {paymentStatus === 'pending' ? (
+      <div className="flex flex-col p-8 mt-32 mx-auto max-w-6xl">
+      <h2 className="text-4xl font-bold mb-4 text-center bg-gradient-to-r from-orange-500 via-pink-500 to-indigo-500 text-transparent bg-clip-text">
+        Your Appointments
+      </h2>
+        {appointments.length === 0 ? (
+          <p className="text-center text-slate-500 text-lg font-semibold">
+  No appointments found for you.
+</p>
+        ) : (
+          appointments.map((appointment) => {
+            const doctor = doctors[appointment.id];
+            return (
+              <div key={appointment.id} className="border p-4 rounded-lg shadow-md bg-white mb-4">
+                <div className="flex">
+                  <div className="w-1/4">
+                    {doctor ? (
+                      <Image
+                        src={doctor.image}
+                        alt={doctor.name}
+                        width={100}
+                        height={100}
+                        className="object-cover bg-blue-500 rounded-md shadow-lg"
+                      />
+                    ) : (
+                      <CircularProgress />
+                    )}
+                  </div>
+                  <div className="w-3/4 pl-4">
+                    <h3 className="text-lg font-bold">{doctor?.name || "Loading..."}</h3>
+                    <p>Date: {appointment.date}</p>
+                    <p>Time: {appointment.time}</p>
+                    <p>Fee: <span className='font-extrabold text-green-700'>${appointment.fee}</span></p>
                     <button
                       onClick={() => {
                         if (session) {
-                          setPaymentModalOpen(true);
+                          handlePayment('stripe', appointment.id, appointment.fee, { cardNumber: '', expiryDate: '', cvc: '' });
                         } else {
                           setLoginModalOpen(true);
                         }
                       }}
-                      className="bg-blue-500 rounded-full text-white py-2 px-4 hover:bg-blue-600 transition duration-200"
+                      className={`mt-2 ${paymentStatus === 'pending' ? 'bg-blue-500' : 'bg-green-500'} rounded-full text-white py-2 px-4`}
                     >
-                      Pay Appointment
+                      {paymentStatus === 'pending' ? 'Pay Appointment' : 'Paid'}
                     </button>
-                  ) : (
-                    <button className="bg-green-500 text-white py-2 rounded-full px-4" disabled>
-                      Paid
-                    </button>
-                  )}
+                  </div>
                 </div>
               </div>
-            ) : (
-              <p>No appointment details available.</p>
-            )}
-          </div>
-        </div>
+            );
+          })
+        )}
       </div>
 
-      {/* Simple Payment Modal */}
+      {/* Payment Modal */}
       {paymentModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
@@ -166,7 +169,7 @@ const AppointmentDetail: React.FC = () => {
               </div>
               <button
                 type="button"
-                onClick={() => handlePayment('stripe', { cardNumber: '', expiryDate: '', cvc: '' })} // Adjust to capture card details
+                onClick={() => handlePayment('stripe', 0, 0, { cardNumber: '', expiryDate: '', cvc: '' })} // Adjust as needed
                 className="bg-blue-500 text-white py-2 px-4 rounded"
               >
                 Pay Now

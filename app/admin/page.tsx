@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import MailModal from '../components/Modal/page'; // Import the MailModal component
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -45,7 +46,23 @@ const Dashboard: React.FC = () => {
       setSidebarOpen(false);
     }, 1000); // Simulate a loading delay
   };
- 
+
+
+  
+  // Fetch appointments based on doctor's email
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchSubscribers();
+    } else if (status === 'unauthenticated') {
+      setIsModalOpen(true); // Show the login modal when unauthenticated
+    }
+  }, [status]);
+  const router = useRouter();
+
+
+  const loginNavigation = () => {
+    router.push('/login');
+  };
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [subject, setSubject] = useState('');
   const [text, setText] = useState('');
@@ -280,6 +297,18 @@ if (error) {
               </table>
             </div>
           )}
+             {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold mb-4">Login Required</h2>
+            <p className="text-gray-700 mb-6">You need to be logged in to access this dashboard. Please log in to continue.</p>
+            <div className="flex justify-end gap-4">
+              <button onClick={loginNavigation} className="bg-blue-600 text-white px-4 py-2 rounded-full">Go to Login</button>
+              <button onClick={() => setIsModalOpen(false)} className="bg-gray-300 text-gray-800 px-4 py-2 rounded-full">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
 
             </>
           )}
