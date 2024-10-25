@@ -11,6 +11,8 @@ import { signOut } from 'next-auth/react';
 import { FaUserMd, FaCalendarCheck, FaListUl, FaPlus, FaBars,FaEnvelope, FaSignOutAlt } from 'react-icons/fa';
 import { CircularProgress } from '@mui/material';
 import AddDoctorForm from '../components/adddoctor/page';
+import AppointmentList from '../components/appoinements/page'; // Import the new component
+
 import { FaExclamationTriangle } from 'react-icons/fa'; // Import a colored icon
 
 
@@ -19,11 +21,6 @@ interface Subscriber {
   createdAt: string;
 }
 
-const appointments = [
-  { id: 1, doctor: 'Dr. Smith', date: '2024-09-30', status: 'Confirmed', specialty: 'Dentist', image: '/assets/assets_frontend/doc1.png' },
-  { id: 2, doctor: 'Dr. Johnson', date: '2024-10-01', status: 'Pending', specialty: 'Dermatologist', image: '/assets/assets_frontend/doc3.png' },
-  { id: 3, doctor: 'Dr. Williams', date: '2024-10-02', status: 'Cancelled', specialty: 'Neurologist', image: '/assets/assets_frontend/doc4.png' },
-];
 
 const patients = [
   { id: 1, name: 'John Doe', age: 30, image: '/assets/assets_frontend/profile_pic.png' },
@@ -172,7 +169,7 @@ if (error) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 place-items-center gap-6 mb-6">
           <div className="p-6 hover:shadow-lg bg-white rounded-lg shadow-md flex flex-col items-center justify-center w-full max-w-xs">
             <h3 className="text-md text-center text-slate-600 font-bold">📅 Appointments</h3>
-            <p className="text-2xl font-bold text-center text-purple-700">{appointments.length}</p>
+            <p className="text-2xl font-bold text-center text-purple-700">{AppointmentList.length}</p>
           </div>
           <div className="p-6 hover:shadow-lg bg-white rounded-lg shadow-md flex flex-col items-center justify-center w-full max-w-xs">
             <h3 className="text-md text-center text-slate-600 font-bold">👨‍⚕️ Total Doctors</h3>
@@ -189,44 +186,8 @@ if (error) {
             </div>
           ) : (
             <>
-              {activeTab === 'appointments' && (
-                <>
-                  <h2 className="text-2xl font-semibold mb-4">Appointments</h2>
-                  <table className="min-w-full bg-white border border-gray-300">
-                    <thead>
-                    <tr className="bg-gray-100">
-                      <th className="py-2 px-2 border-b text-slate-600 font-extrabold text-center text-xs sm:text-base">Doctor</th>
-                      <th className="py-2 px-2 border-b text-slate-600 font-extrabold text-center text-xs sm:text-base">Appointment Date</th>
-                      <th className="py-2 px-2 border-b text-slate-600 font-extrabold text-center text-xs sm:text-base">Status</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {appointments.map((appointment) => (
-                  <tr key={appointment.id}>
-                    <td className="py-2 px-2 text-slate-600 font-extrabold">
-                      <div className="flex gap-3 bg-white shadow-lg p-2 rounded-lg items-center">
-                        <Image 
-                          src={appointment.image} 
-                          alt="Doctor Image" 
-                          width={76} 
-                          height={50} 
-                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover" 
-                        />
-                        <div className="flex flex-col text-sm sm:text-base">
-                          <span className="font-semibold text-gray-800">{appointment.doctor}</span>
-                          <span className="text-green-500">{appointment.specialty}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-2 text-blue-700 text-center text-xs sm:text-base">{appointment.date}</td>
-                    <td className="py-2 text-center text-orange-700 text-xs sm:text-base">{appointment.status}</td>
-                  </tr>
-                  ))}
+       {activeTab === 'appointments' && <AppointmentList />}
 
-                    </tbody>
-                  </table>
-                </>
-              )}
 
 {activeTab === 'patients' && (
   <>

@@ -1,0 +1,12 @@
+### Create Appointmentappointment
+GET http://localhost:3000/api/appointment
+Content-Type: application/json
+Accept: application/json
+
+{
+  "patientName": "Alice Johnson",
+  "doctorEmail": "juma@gmail.com",
+  "date": "2024-10-30",
+  "time": "10:30",
+  "fee": 150.00
+}

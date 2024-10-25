@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     // Create the new appointment entry
-    const newAppointment = await prisma.appointment.create({
+    const newAppointment = await prisma.appts.create({
       data: {
         patientName,
         doctorEmail,
@@ -39,22 +39,14 @@ export async function POST(request: Request) {
 }
 
 // Handle GET request to retrieve appointments
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const doctorEmail = searchParams.get('doctorEmail'); // Optional filter
-
+export async function GET() {
   try {
-    // Retrieve appointments, optionally filtering by doctorEmail
-    const appointments = await prisma.appointment.findMany({
-      where: doctorEmail ? { doctorEmail } : undefined,
-      orderBy: {
-        date: 'asc', // You can change this to 'desc' if you want the latest first
-      },
+    const appts = await prisma.appts.findMany({
     });
-
-    return NextResponse.json(appointments, { status: 200 });
+    return NextResponse.json(appts, { status: 200 });
   } catch (error: any) {
-    console.error('Error retrieving appointments:', error);
-    return NextResponse.json({ error: 'Failed to retrieve appointments.', details: error.message }, { status: 500 });
+    console.error('Error fetching appts:', error.message);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
