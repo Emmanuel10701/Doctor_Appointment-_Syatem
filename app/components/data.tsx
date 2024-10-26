@@ -1,5 +1,15 @@
 // data/doctors.ts
-export const doctorsData = [
+
+export interface Doctor {
+    id: number;
+    name: string;
+    specialty: string;
+    degree: string;
+    description: string;
+    image: string;
+  }
+  
+  export const doctorsData: Doctor[] = [
     {
       id: 1,
       name: 'Dr. Smith',

@@ -3,25 +3,36 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { useParams } from 'next/navigation';
-import { doctorsData } from '../../components/data/page';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import CircularProgress from '@mui/material/CircularProgress'; // Material-UI Spinner
+import CircularProgress from '@mui/material/CircularProgress';
 
-interface User {
-  email: string;
-  name?: string; // Add other properties as needed
-}
+// Sample doctors data for demonstration
+const doctorsData = [
+  {
+    id: 1,
+    name: "Dr. Smith",
+    specialty: "Cardiology",
+    degree: "MD",
+    description: "Heart specialist.",
+    image: "/images/doctor1.jpg",
+  },
+  // Add more doctors as needed
+];
 
-interface Session {
-  user?: User; // Making user optional
+interface Doctor {
+  id: number;
+  name: string;
+  specialty: string;
+  degree: string;
+  description: string;
+  image: string;
 }
 
 const AppointmentDetail: React.FC = () => {
   const { id } = useParams();
-  const { data: session } = useSession(); // Get session data
-  const [doctor, setDoctor] = useState<any>(null);
+  const { data: session } = useSession();
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState('');
@@ -29,12 +40,12 @@ const AppointmentDetail: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
-  const router = useRouter(); // Use router for navigation
+  const router = useRouter();
 
   useEffect(() => {
     if (id) {
-      const selectedDoctor = doctorsData.find((doc) => doc.id === Number(id));
-      setDoctor(selectedDoctor);
+      const selectedDoctor = doctorsData.find(doc => doc.id === Number(id));
+      setDoctor(selectedDoctor || null);
       setLoading(false);
     }
   }, [id]);
@@ -44,7 +55,7 @@ const AppointmentDetail: React.FC = () => {
 
   const handleBookAppointment = () => {
     if (!session?.user) {
-      setLoginModalOpen(true); // Open login modal if not logged in
+      setLoginModalOpen(true);
       return;
     }
     
@@ -56,12 +67,11 @@ const AppointmentDetail: React.FC = () => {
   };
 
   const confirmAppointment = async () => {
-    if (!session?.user) return; // Safety check
+    if (!session?.user) return;
 
     setAppointmentConfirmed(true);
     setModalOpen(false);
 
-    // Push the appointment data to your API
     try {
       const response = await fetch('/api/appointment', {
         method: 'POST',
@@ -69,7 +79,7 @@ const AppointmentDetail: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          patientName: session.user.name, // Include patient's name
+          patientName: session.user.name,
           doctorName: doctor?.name,
           specialty: doctor?.specialty,
           date: selectedDate?.toISOString(),
@@ -105,13 +115,13 @@ const AppointmentDetail: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <CircularProgress /> {/* Material-UI Spinner */}
+        <CircularProgress />
       </div>
-    ); // Loading spinner while fetching doctor data
+    );
   }
 
   if (!doctor) {
-    return <div>Doctor not found.</div>; // Handle case where doctor is not found
+    return <div>Doctor not found.</div>;
   }
 
   return (

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { CircularProgress } from "@mui/material";
-import { doctorsData } from '../components/data/page'; // Import your local doctor data
+import { doctorsData } from '../components/data'; // Import your local doctor data
 
 // Define types for appointment and doctor
 interface Appointment {
